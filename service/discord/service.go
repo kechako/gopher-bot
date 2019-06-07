@@ -1,0 +1,110 @@
+package discord
+
+import (
+	"context"
+
+	discord "github.com/bwmarrin/discordgo"
+	"github.com/kechako/gopher-bot/service"
+	"golang.org/x/xerrors"
+)
+
+// discordService represents a service for Discord.
+type discordService struct {
+	session *discord.Session
+	ch      chan *service.Event
+}
+
+// New returns a new Discord service as service.Service.
+func New(token string) (service.Service, error) {
+	if token == "" {
+		return nil, xerrors.New("the token is empty")
+	}
+
+	session, err := discord.New("Bot " + token)
+	if err != nil {
+		return nil, xerrors.Errorf("failed to create a new Discord session: %w", err)
+	}
+
+	s := &discordService{
+		session: session,
+	}
+	s.addHandlers()
+
+	return s, nil
+}
+
+// Start implements the service.Service interface.
+func (s *discordService) Start(ctx context.Context) (<-chan *service.Event, error) {
+	s.ch = make(chan *service.Event)
+
+	if err := s.session.Open(); err != nil {
+		close(s.ch)
+		return nil, err
+	}
+
+	return s.ch, nil
+}
+
+// Start implements the service.Service interface.
+func (s *discordService) Close() error {
+	return s.session.Close()
+}
+
+// UserID implements the service.Service interface.
+func (s *discordService) UserID() string {
+	return s.session.State.User.ID
+}
+
+// Post implements the service.Service interface.
+func (s *discordService) Post(channelID, text string) {
+	_, err := s.session.ChannelMessageSend(channelID, text)
+	if err != nil {
+		// TODO: output error log
+	}
+}
+
+// Mention implements the service.Service interface.
+func (s *discordService) Mention(channelID, userID, text string) {
+	user, err := s.session.User(userID)
+	if err != nil {
+		// TODO: output error log
+	}
+
+	text = user.Mention() + text
+	_, err = s.session.ChannelMessageSend(channelID, text)
+	if err != nil {
+		// TODO: output error log
+	}
+}
+
+// addHandlers adds discord event handlers.
+func (s *discordService) addHandlers() {
+	s.session.AddHandler(func(session *discord.Session, event *discord.Ready) {
+		s.handleReady(event)
+	})
+
+	s.session.AddHandler(func(session *discord.Session, event *discord.MessageCreate) {
+		s.handleMessageCreate(event)
+	})
+}
+
+// handleReady handles the Ready event.
+func (s *discordService) handleReady(msg *discord.Ready) {
+	s.ch <- &service.Event{
+		Type: service.ConnectedEvent,
+		Data: newHello(s),
+	}
+}
+
+// handleMessageCreate handles the MessageCreate event.
+func (s *discordService) handleMessageCreate(msg *discord.MessageCreate) {
+	if msg.Author.ID == s.UserID() {
+		// bot message
+		return
+	}
+
+	s.ch <- &service.Event{
+		Type: service.MessageEvent,
+		Data: newMessage(s, msg.Message),
+	}
+}

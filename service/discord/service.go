@@ -1,7 +1,9 @@
 package discord
 
 import (
+	"bytes"
 	"context"
+	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
 	"github.com/kechako/gopher-bot/service"
@@ -75,6 +77,20 @@ func (s *discordService) Mention(channelID, userID, text string) {
 	if err != nil {
 		// TODO: output error log
 	}
+}
+
+// EscapeHelp implements the service.Service interface.
+func (s *discordService) EscapeHelp(help string) string {
+	escaped := bytes.NewBuffer(make([]byte, len(help)+8))
+	escaped.Reset()
+
+	escaped.WriteString("```\n")
+	if !strings.HasSuffix(help, "\n") {
+		escaped.WriteRune('\n')
+	}
+	escaped.WriteString("```")
+
+	return escaped.String()
 }
 
 // addHandlers adds discord event handlers.

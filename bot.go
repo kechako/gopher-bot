@@ -109,8 +109,6 @@ func callPluginDoAction(ctx context.Context, plugin plugin.Plugin, msg plugin.Me
 func (b *Bot) postHelp(ctx context.Context, channelID string) {
 	var help strings.Builder
 
-	help.WriteString("```\n")
-
 	for i, p := range b.plugins {
 		h := callPluginHelp(ctx, p)
 		if h == nil {
@@ -126,9 +124,8 @@ func (b *Bot) postHelp(ctx context.Context, channelID string) {
 		}
 	}
 
-	help.WriteString("```")
-
-	b.service.Post(channelID, help.String())
+	escaped := b.service.EscapeHelp(help.String())
+	b.service.Post(channelID, escaped)
 }
 
 func callPluginHelp(ctx context.Context, plugin plugin.Plugin) *plugin.Help {

@@ -16,4 +16,6 @@ type Service interface {
 	Post(channelID string, text string)
 	// Mention posts a new message that mentions to the user to the channel.
 	Mention(channelID, userID, text string)
+	// EscapeHelp escapes help document.
+	EscapeHelp(help string) string
 }

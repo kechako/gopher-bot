@@ -56,6 +56,10 @@ type Help struct {
 	Commands    []*Command
 }
 
+func (h *Help) String() string {
+	return DefaultHelpFormatter.Format(h)
+}
+
 // Command represents a command for a plugin.
 type Command struct {
 	Command     string

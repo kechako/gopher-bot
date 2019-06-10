@@ -2,7 +2,6 @@ package bot
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -107,7 +106,7 @@ func callPluginDoAction(ctx context.Context, plugin plugin.Plugin, msg plugin.Me
 }
 
 func (b *Bot) postHelp(ctx context.Context, channelID string) {
-	var help strings.Builder
+	var doc strings.Builder
 
 	for i, p := range b.plugins {
 		h := callPluginHelp(ctx, p)
@@ -115,16 +114,13 @@ func (b *Bot) postHelp(ctx context.Context, channelID string) {
 			continue
 		}
 		if i > 0 {
-			help.WriteString("\n")
+			doc.WriteString("\n")
 		}
 
-		fmt.Fprintf(&help, "%s: %s\n", h.Name, h.Description)
-		for _, cmd := range h.Commands {
-			fmt.Fprintf(&help, "    %s: %s\n", cmd.Command, cmd.Description)
-		}
+		doc.WriteString(h.String())
 	}
 
-	escaped := b.service.EscapeHelp(help.String())
+	escaped := b.service.EscapeHelp(doc.String())
 	b.service.Post(channelID, escaped)
 }
 

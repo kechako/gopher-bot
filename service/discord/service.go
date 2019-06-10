@@ -85,6 +85,7 @@ func (s *discordService) EscapeHelp(help string) string {
 	escaped.Reset()
 
 	escaped.WriteString("```\n")
+	escaped.WriteString(help)
 	if !strings.HasSuffix(help, "\n") {
 		escaped.WriteRune('\n')
 	}

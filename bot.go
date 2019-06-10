@@ -78,7 +78,19 @@ func callPluginHello(ctx context.Context, plugin plugin.Plugin, hello plugin.Hel
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	plugin.Hello(ctx, hello)
+	ch := make(chan struct{})
+	go func() {
+		plugin.Hello(ctx, hello)
+		close(ch)
+	}()
+
+	select {
+	case <-ch:
+	case <-ctx.Done():
+		if err := ctx.Err(); err != nil {
+			// TODO: output error log
+		}
+	}
 }
 
 func (b *Bot) doAction(ctx context.Context, msg plugin.Message) {
@@ -102,7 +114,19 @@ func callPluginDoAction(ctx context.Context, plugin plugin.Plugin, msg plugin.Me
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	plugin.DoAction(ctx, msg)
+	ch := make(chan struct{})
+	go func() {
+		plugin.DoAction(ctx, msg)
+		close(ch)
+	}()
+
+	select {
+	case <-ch:
+	case <-ctx.Done():
+		if err := ctx.Err(); err != nil {
+			// TODO: output error log
+		}
+	}
 }
 
 func (b *Bot) postHelp(ctx context.Context, channelID string) {
@@ -124,7 +148,7 @@ func (b *Bot) postHelp(ctx context.Context, channelID string) {
 	b.service.Post(channelID, escaped)
 }
 
-func callPluginHelp(ctx context.Context, plugin plugin.Plugin) *plugin.Help {
+func callPluginHelp(ctx context.Context, p plugin.Plugin) *plugin.Help {
 	defer func() {
 		if err := recover(); err != nil {
 			// TODO: output error log
@@ -134,5 +158,18 @@ func callPluginHelp(ctx context.Context, plugin plugin.Plugin) *plugin.Help {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	return plugin.Help(ctx)
+	ch := make(chan *plugin.Help, 1)
+	go func() {
+		ch <- p.Help(ctx)
+	}()
+
+	select {
+	case help := <-ch:
+		return help
+	case <-ctx.Done():
+		if err := ctx.Err(); err != nil {
+			// TODO: output error log
+		}
+		return nil
+	}
 }

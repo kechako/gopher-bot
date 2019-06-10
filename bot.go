@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
@@ -51,41 +52,67 @@ loop:
 			switch event.Type {
 			case service.ConnectedEvent:
 				if hello := event.GetHello(); hello != nil {
-					b.hello(hello)
+					b.hello(ctx, hello)
 				}
 			case service.MessageEvent:
 				if msg := event.GetMessage(); msg != nil {
-					b.doAction(msg)
+					b.doAction(ctx, msg)
 				}
 			}
 		}
 	}
 }
 
-func (b *Bot) hello(hello plugin.Hello) {
+func (b *Bot) hello(ctx context.Context, hello plugin.Hello) {
 	for _, p := range b.plugins {
-		p.Hello(hello)
+		callPluginHello(ctx, p, hello)
 	}
 }
 
-func (b *Bot) doAction(msg plugin.Message) {
+func callPluginHello(ctx context.Context, plugin plugin.Plugin, hello plugin.Hello) {
+	defer func() {
+		if err := recover(); err != nil {
+			// TODO: output error log
+		}
+	}()
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	plugin.Hello(ctx, hello)
+}
+
+func (b *Bot) doAction(ctx context.Context, msg plugin.Message) {
 	if msg.MentionTo(b.service.UserID()) && strings.Contains(msg.Text(), "help") {
-		b.postHelp(msg.ChannelID())
+		b.postHelp(ctx, msg.ChannelID())
 		return
 	}
 
 	for _, p := range b.plugins {
-		p.DoAction(msg)
+		callPluginDoAction(ctx, p, msg)
 	}
 }
 
-func (b *Bot) postHelp(channelID string) {
+func callPluginDoAction(ctx context.Context, plugin plugin.Plugin, msg plugin.Message) {
+	defer func() {
+		if err := recover(); err != nil {
+			// TODO: output error log
+		}
+	}()
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	plugin.DoAction(ctx, msg)
+}
+
+func (b *Bot) postHelp(ctx context.Context, channelID string) {
 	var help strings.Builder
 
 	help.WriteString("```\n")
 
 	for i, p := range b.plugins {
-		h := p.Help()
+		h := callPluginHelp(ctx, p)
 		if h == nil {
 			continue
 		}
@@ -102,4 +129,17 @@ func (b *Bot) postHelp(channelID string) {
 	help.WriteString("```")
 
 	b.service.Post(channelID, help.String())
+}
+
+func callPluginHelp(ctx context.Context, plugin plugin.Plugin) *plugin.Help {
+	defer func() {
+		if err := recover(); err != nil {
+			// TODO: output error log
+		}
+	}()
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	return plugin.Help(ctx)
 }

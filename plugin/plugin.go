@@ -1,13 +1,17 @@
 package plugin
 
+import (
+	"context"
+)
+
 // Plugin is the interface implemented by bot plugins.
 type Plugin interface {
 	// Hello is called when the service is ready.
-	Hello(h Hello)
+	Hello(ctx context.Context, h Hello)
 	// DoAction is called when the message is received.
-	DoAction(m Message)
+	DoAction(ctx context.Context, m Message)
 	// Help returns a plugin help information.
-	Help() *Help
+	Help(ctx context.Context) *Help
 }
 
 // Hello is the interface to get bot information.

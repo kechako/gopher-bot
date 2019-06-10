@@ -138,7 +138,7 @@ func (b *Bot) postHelp(ctx context.Context, channelID string) {
 			continue
 		}
 		if i > 0 {
-			doc.WriteString("\n")
+			doc.WriteString("\n\n")
 		}
 
 		doc.WriteString(h.String())

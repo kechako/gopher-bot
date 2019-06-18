@@ -33,6 +33,10 @@ func (cmd *listCommand) Execute(ctx context.Context, params []string) (string, e
 		return "", xerrors.Errorf("failed to get locations: %w", err)
 	}
 
+	if len(locs) == 0 {
+		return "Location list is empty.", nil
+	}
+
 	var msg strings.Builder
 	for i, loc := range locs {
 		if i > 0 {

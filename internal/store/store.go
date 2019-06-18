@@ -88,10 +88,12 @@ func (tx *Tx) Get(key string, value interface{}) error {
 		return xerrors.Errorf("failed to get value: %w", err)
 	}
 
-	err = item.Value(func(buf []byte) error {
-		return json.Unmarshal(buf, value)
-	})
+	buf, err := item.Value()
 	if err != nil {
+		return xerrors.Errorf("failed to get item value: %w", err)
+	}
+
+	if err := json.Unmarshal(buf, value); err != nil {
 		return xerrors.Errorf("failed to decode the value: %w", err)
 	}
 
@@ -138,11 +140,12 @@ func (it *Iterator) Get(value interface{}) (key string, err error) {
 	item := it.it.Item()
 	key = string(item.Key())
 
-	err = item.Value(func(buf []byte) error {
-		return json.Unmarshal(buf, value)
-	})
-	if err != nil {
-		err = xerrors.Errorf("failed to decode the value: %w", err)
+	if buf, verr := item.Value(); verr != nil {
+		err = xerrors.Errorf("failed to get item value: %w", verr)
+	} else {
+		if uerr := json.Unmarshal(buf, value); uerr != nil {
+			err = xerrors.Errorf("failed to decode the value: %w", uerr)
+		}
 	}
 
 	return

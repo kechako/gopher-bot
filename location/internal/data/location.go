@@ -79,6 +79,10 @@ func AddLocation(ctx context.Context, loc *Location) error {
 	err := s.Update(func(tx *store.Tx) error {
 		var old Location
 		if err := tx.Get(keyPrefix+loc.Name, &old); err != nil {
+			if err != store.ErrKeyNotFound {
+				return err
+			}
+		} else {
 			return ErrDuplicated
 		}
 
@@ -103,15 +107,15 @@ func UpdateLocation(ctx context.Context, loc *Location) error {
 
 	err := s.Update(func(tx *store.Tx) error {
 		var old Location
-		if err := tx.Get(keyPrefix+loc.Name, &old); err == store.ErrKeyNotFound {
-			return ErrKeyNotFound
+		if err := tx.Get(keyPrefix+loc.Name, &old); err != nil {
+			return err
 		}
 
 		return tx.Set(keyPrefix+loc.Name, loc)
 	})
 	if err != nil {
-		if err == ErrKeyNotFound {
-			return err
+		if err == store.ErrKeyNotFound {
+			return ErrKeyNotFound
 		}
 
 		return xerrors.Errorf("failed to update location of %s: %w", loc.Name, err)
@@ -127,6 +131,11 @@ func RemoveLocation(ctx context.Context, name string) error {
 	}
 
 	err := s.Update(func(tx *store.Tx) error {
+		var old Location
+		if err := tx.Get(keyPrefix+name, &old); err != nil {
+			return err
+		}
+
 		return tx.Delete(keyPrefix + name)
 	})
 	if err != nil {

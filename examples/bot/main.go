@@ -22,7 +22,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	b := bot.New(service)
+	b, err := bot.New(service)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer b.Close()
+
 	b.AddPlugin(echo.New())
 
 	ctx, cancel := sigctx.WithCancelBySignal(context.Background(), os.Interrupt)

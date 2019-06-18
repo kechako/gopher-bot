@@ -2,6 +2,7 @@ module github.com/kechako/gopher-bot
 
 require (
 	github.com/bwmarrin/discordgo v0.19.0
+	github.com/dgraph-io/badger v0.0.0-20190614233456-43c731a24168
 	github.com/google/go-cmp v0.3.0
 	github.com/kechako/sigctx v0.1.0
 	github.com/mattn/go-runewidth v0.0.4

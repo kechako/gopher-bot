@@ -1,0 +1,166 @@
+package store
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"github.com/dgraph-io/badger"
+	"golang.org/x/xerrors"
+)
+
+var ErrKeyNotFound = xerrors.New("key not found")
+
+type Store struct {
+	db *badger.DB
+}
+
+func New(dir string) (*Store, error) {
+	opts := badger.DefaultOptions
+	opts.Dir = dir
+	opts.ValueDir = dir
+	db, err := badger.Open(opts)
+	if err != nil {
+		return nil, xerrors.Errorf("failed to open databsae: %w", err)
+	}
+
+	return &Store{db: db}, nil
+}
+
+func (s *Store) Close() error {
+	return s.db.Close()
+}
+
+func (s *Store) Update(fn func(tx *Tx) error) error {
+	var fnErr error
+	err := s.db.Update(func(txn *badger.Txn) error {
+		fnErr = fn(&Tx{txn: txn})
+		return fnErr
+	})
+	if fnErr != nil {
+		return fnErr
+	}
+	if err != nil {
+		return xerrors.Errorf("failed to update database: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Store) View(fn func(tx *Tx) error) error {
+	var fnErr error
+	err := s.db.View(func(txn *badger.Txn) error {
+		fnErr = fn(&Tx{txn: txn})
+		return fnErr
+	})
+	if fnErr != nil {
+		return fnErr
+	}
+	if err != nil {
+		return xerrors.Errorf("failed to view database: %w", err)
+	}
+
+	return nil
+}
+
+type Tx struct {
+	txn *badger.Txn
+}
+
+func (tx *Tx) Set(key string, value interface{}) error {
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(value); err != nil {
+		return xerrors.Errorf("failed to encode the value: %w", err)
+	}
+
+	if err := tx.txn.Set([]byte(key), buf.Bytes()); err != nil {
+		return xerrors.Errorf("failed to set the value: %w", err)
+	}
+
+	return nil
+}
+
+func (tx *Tx) Get(key string, value interface{}) error {
+	item, err := tx.txn.Get([]byte(key))
+	if err != nil {
+		if err == badger.ErrKeyNotFound {
+			return ErrKeyNotFound
+		}
+		return xerrors.Errorf("failed to get value: %w", err)
+	}
+
+	err = item.Value(func(buf []byte) error {
+		return json.Unmarshal(buf, value)
+	})
+	if err != nil {
+		return xerrors.Errorf("failed to decode the value: %w", err)
+	}
+
+	return nil
+}
+
+func (tx *Tx) Delete(key string) error {
+	err := tx.txn.Delete([]byte(key))
+	if err != nil {
+		if err == badger.ErrKeyNotFound {
+			return ErrKeyNotFound
+		}
+		return xerrors.Errorf("failed to delete value: %w", err)
+	}
+
+	return nil
+}
+
+func (tx *Tx) NewIterator() *Iterator {
+	return &Iterator{it: tx.txn.NewIterator(badger.DefaultIteratorOptions)}
+}
+
+type Iterator struct {
+	it *badger.Iterator
+}
+
+func (it *Iterator) Close() {
+	it.it.Close()
+}
+
+func (it *Iterator) Seek(prefix string) {
+	it.it.Seek([]byte(prefix))
+}
+
+func (it *Iterator) ValidPrefix(prefix string) bool {
+	return it.it.ValidForPrefix([]byte(prefix))
+}
+
+func (it *Iterator) Next() {
+	it.it.Next()
+}
+
+func (it *Iterator) Get(value interface{}) (key string, err error) {
+	item := it.it.Item()
+	key = string(item.Key())
+
+	err = item.Value(func(buf []byte) error {
+		return json.Unmarshal(buf, value)
+	})
+	if err != nil {
+		err = xerrors.Errorf("failed to decode the value: %w", err)
+	}
+
+	return
+}
+
+type contextKey string
+
+var storeContextKey contextKey = "store"
+
+func ContextWithStore(parent context.Context, store *Store) context.Context {
+	return context.WithValue(parent, storeContextKey, store)
+}
+
+func StoreFromContext(ctx context.Context) (*Store, bool) {
+	store, ok := ctx.Value(storeContextKey).(*Store)
+	if !ok {
+		return nil, false
+	}
+
+	return store, true
+}

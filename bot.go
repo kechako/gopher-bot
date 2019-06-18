@@ -2,24 +2,72 @@ package bot
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/kechako/gopher-bot/internal/store"
 	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
+	"golang.org/x/xerrors"
 )
 
 // Bot represents a bot.
 type Bot struct {
 	service service.Service
 	plugins []plugin.Plugin
+
+	store    *store.Store
+	storeDir string
 }
 
 // New returns a new *Bot.
-func New(s service.Service) *Bot {
-	return &Bot{
+func New(s service.Service, opts ...Option) (*Bot, error) {
+	bot := &Bot{
 		service: s,
 	}
+
+	for _, opt := range opts {
+		opt(bot)
+	}
+
+	err := bot.init()
+	if err != nil {
+		return nil, err
+	}
+
+	return bot, nil
+}
+
+func (b *Bot) init() error {
+	if b.storeDir == "" {
+		dir, err := ioutil.TempDir(os.TempDir(), "gopher-bot")
+		if err != nil {
+			return xerrors.Errorf("failed to create database dir: %w", err)
+		}
+		b.storeDir = dir
+	} else {
+		if stat, err := os.Stat(b.storeDir); err != nil {
+			if err := os.MkdirAll(b.storeDir, 0755); err != nil {
+				return xerrors.Errorf("failed to create database dir: %w", err)
+			}
+		} else if !stat.IsDir() {
+			return xerrors.Errorf("%s is not a directory", b.storeDir)
+		}
+	}
+
+	store, err := store.New(b.storeDir)
+	if err != nil {
+		return err
+	}
+	b.store = store
+
+	return nil
+}
+
+func (b *Bot) Close() error {
+	return b.store.Close()
 }
 
 // AddPlugin adds a plugin to the bot.
@@ -29,6 +77,9 @@ func (b *Bot) AddPlugin(p plugin.Plugin) {
 
 // Run runs the bot.
 func (b *Bot) Run(ctx context.Context) error {
+	// set database store to context
+	ctx = store.ContextWithStore(ctx, b.store)
+
 	ch, err := b.service.Start(ctx)
 	if err != nil {
 		return err
@@ -173,3 +224,12 @@ func callPluginHelp(ctx context.Context, p plugin.Plugin) *plugin.Help {
 		return nil
 	}
 }
+
+type Option func(bot *Bot)
+
+func WithStoreDir(dir string) Option {
+	return func(bot *Bot) {
+		bot.storeDir = dir
+	}
+}
+

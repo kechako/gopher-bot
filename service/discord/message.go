@@ -66,3 +66,10 @@ func (m *message) MentionTo(userID string) bool {
 
 	return false
 }
+
+// PostHelp implements the plugin.Message interface.
+func (m *message) PostHelp(help *plugin.Help) {
+	msg := m.service.EscapeHelp(help.String())
+
+	m.Post(msg)
+}

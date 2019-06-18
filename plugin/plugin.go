@@ -47,6 +47,8 @@ type Message interface {
 	// MentionTo returns whether the message mentions to the userID.
 	// Returns true if the message mentions to the userID, otherwise returns false.
 	MentionTo(userID string) bool
+	// PostHelp posts a plugin help message.
+	PostHelp(help *Help)
 }
 
 // Help represents a help information of a plugin.

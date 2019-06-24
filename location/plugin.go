@@ -28,7 +28,7 @@ func (p *locationPlugin) Hello(ctx context.Context, hello plugin.Hello) {
 
 func (p *locationPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 	params := strings.Fields(msg.Text())
-	if len(params) < 0 || params[0] != commandName {
+	if len(params) == 0 || params[0] != commandName {
 		return
 	}
 

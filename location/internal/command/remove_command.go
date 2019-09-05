@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/kechako/gopher-bot/location/internal/data"
-	"golang.org/x/xerrors"
 )
 
 type removeCommand struct{}
@@ -35,7 +34,7 @@ func (cmd *removeCommand) Execute(ctx context.Context, params []string) (string,
 		if err == data.ErrKeyNotFound {
 			return fmt.Sprintf("%s does not exist.", name), nil
 		}
-		return "", xerrors.Errorf("failed to remove a location %s: %w", name, err)
+		return "", fmt.Errorf("failed to remove a location %s: %w", name, err)
 	}
 
 	return fmt.Sprintf("Success to remove a location : %s", name), nil

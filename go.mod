@@ -8,5 +8,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.4
 	golang.org/x/crypto v0.0.0-20190617133340-57b3e21c3d56 // indirect
 	golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f // indirect
-	golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522
 )
+
+go 1.13

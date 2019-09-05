@@ -3,11 +3,12 @@ package discord
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
 	"github.com/kechako/gopher-bot/service"
-	"golang.org/x/xerrors"
 )
 
 // discordService represents a service for Discord.
@@ -19,12 +20,12 @@ type discordService struct {
 // New returns a new Discord service as service.Service.
 func New(token string) (service.Service, error) {
 	if token == "" {
-		return nil, xerrors.New("the token is empty")
+		return nil, errors.New("the token is empty")
 	}
 
 	session, err := discord.New("Bot " + token)
 	if err != nil {
-		return nil, xerrors.Errorf("failed to create a new Discord session: %w", err)
+		return nil, fmt.Errorf("failed to create a new Discord session: %w", err)
 	}
 
 	s := &discordService{

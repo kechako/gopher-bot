@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/kechako/gopher-bot/location/internal/data"
-	"golang.org/x/xerrors"
 )
 
 type changeCommand struct{}
@@ -33,7 +32,7 @@ func (cmd *changeCommand) Execute(ctx context.Context, params []string) (string,
 		if err == data.ErrKeyNotFound {
 			return fmt.Sprintf("%s does not exist.", loc.Name), nil
 		}
-		return "", xerrors.Errorf("failed to update a location %s: %w", loc.Name, err)
+		return "", fmt.Errorf("failed to update a location %s: %w", loc.Name, err)
 	}
 
 	return fmt.Sprintf("Success to change a location : %s [%f, %f]", loc.Name, loc.Latitude, loc.Longitude), nil

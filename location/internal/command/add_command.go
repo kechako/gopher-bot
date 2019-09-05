@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/kechako/gopher-bot/location/internal/data"
-	"golang.org/x/xerrors"
 )
 
 type addCommand struct{}
@@ -35,7 +34,7 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string) (string, er
 			return fmt.Sprintf("%s already exists", loc.Name), nil
 		}
 
-		return "", xerrors.Errorf("failed to add a new location %s: %w", loc.Name, err)
+		return "", fmt.Errorf("failed to add a new location %s: %w", loc.Name, err)
 	}
 
 	return fmt.Sprintf("Success to add a new location : %s [%f, %f]", loc.Name, loc.Latitude, loc.Longitude), nil

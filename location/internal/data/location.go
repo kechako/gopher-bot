@@ -2,16 +2,17 @@ package data
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/kechako/gopher-bot/internal/store"
-	"golang.org/x/xerrors"
 )
 
 const keyPrefix = "location_"
 
 var (
-	ErrKeyNotFound = xerrors.New("key is not found")
-	ErrDuplicated  = xerrors.New("location is duplicated")
+	ErrKeyNotFound = errors.New("key is not found")
+	ErrDuplicated  = errors.New("location is duplicated")
 )
 
 type Location struct {
@@ -23,7 +24,7 @@ type Location struct {
 func GetLocation(ctx context.Context, name string) (*Location, error) {
 	s, ok := store.StoreFromContext(ctx)
 	if !ok {
-		return nil, xerrors.New("could not get database store from context")
+		return nil, errors.New("could not get database store from context")
 	}
 
 	var loc Location
@@ -34,7 +35,7 @@ func GetLocation(ctx context.Context, name string) (*Location, error) {
 		if err == store.ErrKeyNotFound {
 			return nil, ErrKeyNotFound
 		}
-		return nil, xerrors.Errorf("failed to get location of %s: %w", name, err)
+		return nil, fmt.Errorf("failed to get location of %s: %w", name, err)
 	}
 
 	return &loc, nil
@@ -45,7 +46,7 @@ func GetLocations(ctx context.Context) ([]*Location, error) {
 
 	s, ok := store.StoreFromContext(ctx)
 	if !ok {
-		return nil, xerrors.New("could not get database store from context")
+		return nil, errors.New("could not get database store from context")
 	}
 
 	err := s.View(func(tx *store.Tx) error {
@@ -56,7 +57,7 @@ func GetLocations(ctx context.Context) ([]*Location, error) {
 			var loc Location
 			_, err := it.Get(&loc)
 			if err != nil {
-				return xerrors.Errorf("failed to get locations: %w", err)
+				return fmt.Errorf("failed to get locations: %w", err)
 			}
 			locs = append(locs, &loc)
 		}
@@ -64,7 +65,7 @@ func GetLocations(ctx context.Context) ([]*Location, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, xerrors.Errorf("failed to get locations", err)
+		return nil, fmt.Errorf("failed to get locations: %w", err)
 	}
 
 	return locs, nil
@@ -73,7 +74,7 @@ func GetLocations(ctx context.Context) ([]*Location, error) {
 func AddLocation(ctx context.Context, loc *Location) error {
 	s, ok := store.StoreFromContext(ctx)
 	if !ok {
-		return xerrors.New("could not get database store from context")
+		return errors.New("could not get database store from context")
 	}
 
 	err := s.Update(func(tx *store.Tx) error {
@@ -93,7 +94,7 @@ func AddLocation(ctx context.Context, loc *Location) error {
 			return err
 		}
 
-		return xerrors.Errorf("failed to add location of %s: %w", loc.Name, err)
+		return fmt.Errorf("failed to add location of %s: %w", loc.Name, err)
 	}
 
 	return nil
@@ -102,7 +103,7 @@ func AddLocation(ctx context.Context, loc *Location) error {
 func UpdateLocation(ctx context.Context, loc *Location) error {
 	s, ok := store.StoreFromContext(ctx)
 	if !ok {
-		return xerrors.New("could not get database store from context")
+		return errors.New("could not get database store from context")
 	}
 
 	err := s.Update(func(tx *store.Tx) error {
@@ -118,7 +119,7 @@ func UpdateLocation(ctx context.Context, loc *Location) error {
 			return ErrKeyNotFound
 		}
 
-		return xerrors.Errorf("failed to update location of %s: %w", loc.Name, err)
+		return fmt.Errorf("failed to update location of %s: %w", loc.Name, err)
 	}
 
 	return nil
@@ -127,7 +128,7 @@ func UpdateLocation(ctx context.Context, loc *Location) error {
 func RemoveLocation(ctx context.Context, name string) error {
 	s, ok := store.StoreFromContext(ctx)
 	if !ok {
-		return xerrors.New("could not get database store from context")
+		return errors.New("could not get database store from context")
 	}
 
 	err := s.Update(func(tx *store.Tx) error {
@@ -143,7 +144,7 @@ func RemoveLocation(ctx context.Context, name string) error {
 			return ErrKeyNotFound
 		}
 
-		return xerrors.Errorf("failed to remove location of %s: %w", name, err)
+		return fmt.Errorf("failed to remove location of %s: %w", name, err)
 	}
 
 	return nil

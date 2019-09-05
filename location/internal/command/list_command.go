@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/kechako/gopher-bot/location/internal/data"
-	"golang.org/x/xerrors"
 )
 
 type listCommand struct{}
@@ -30,7 +29,7 @@ func (cmd *listCommand) Execute(ctx context.Context, params []string) (string, e
 
 	locs, err := data.GetLocations(ctx)
 	if err != nil {
-		return "", xerrors.Errorf("failed to get locations: %w", err)
+		return "", fmt.Errorf("failed to get locations: %w", err)
 	}
 
 	if len(locs) == 0 {

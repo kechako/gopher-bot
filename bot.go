@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -10,7 +11,6 @@ import (
 	"github.com/kechako/gopher-bot/internal/store"
 	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
-	"golang.org/x/xerrors"
 )
 
 // Bot represents a bot.
@@ -44,16 +44,16 @@ func (b *Bot) init() error {
 	if b.storeDir == "" {
 		dir, err := ioutil.TempDir(os.TempDir(), "gopher-bot")
 		if err != nil {
-			return xerrors.Errorf("failed to create database dir: %w", err)
+			return fmt.Errorf("failed to create database dir: %w", err)
 		}
 		b.storeDir = dir
 	} else {
 		if stat, err := os.Stat(b.storeDir); err != nil {
 			if err := os.MkdirAll(b.storeDir, 0755); err != nil {
-				return xerrors.Errorf("failed to create database dir: %w", err)
+				return fmt.Errorf("failed to create database dir: %w", err)
 			}
 		} else if !stat.IsDir() {
-			return xerrors.Errorf("%s is not a directory", b.storeDir)
+			return fmt.Errorf("%s is not a directory", b.storeDir)
 		}
 	}
 
@@ -232,4 +232,3 @@ func WithStoreDir(dir string) Option {
 		bot.storeDir = dir
 	}
 }
-

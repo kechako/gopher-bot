@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+
 	"github.com/dgraph-io/badger"
-	"golang.org/x/xerrors"
 )
 
-var ErrKeyNotFound = xerrors.New("key not found")
+var ErrKeyNotFound = errors.New("key not found")
 
 type Store struct {
 	db *badger.DB
@@ -20,7 +22,7 @@ func New(dir string) (*Store, error) {
 	opts.ValueDir = dir
 	db, err := badger.Open(opts)
 	if err != nil {
-		return nil, xerrors.Errorf("failed to open databsae: %w", err)
+		return nil, fmt.Errorf("failed to open databsae: %w", err)
 	}
 
 	return &Store{db: db}, nil
@@ -40,7 +42,7 @@ func (s *Store) Update(fn func(tx *Tx) error) error {
 		return fnErr
 	}
 	if err != nil {
-		return xerrors.Errorf("failed to update database: %w", err)
+		return fmt.Errorf("failed to update database: %w", err)
 	}
 
 	return nil
@@ -56,7 +58,7 @@ func (s *Store) View(fn func(tx *Tx) error) error {
 		return fnErr
 	}
 	if err != nil {
-		return xerrors.Errorf("failed to view database: %w", err)
+		return fmt.Errorf("failed to view database: %w", err)
 	}
 
 	return nil
@@ -69,11 +71,11 @@ type Tx struct {
 func (tx *Tx) Set(key string, value interface{}) error {
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(value); err != nil {
-		return xerrors.Errorf("failed to encode the value: %w", err)
+		return fmt.Errorf("failed to encode the value: %w", err)
 	}
 
 	if err := tx.txn.Set([]byte(key), buf.Bytes()); err != nil {
-		return xerrors.Errorf("failed to set the value: %w", err)
+		return fmt.Errorf("failed to set the value: %w", err)
 	}
 
 	return nil
@@ -85,16 +87,16 @@ func (tx *Tx) Get(key string, value interface{}) error {
 		if err == badger.ErrKeyNotFound {
 			return ErrKeyNotFound
 		}
-		return xerrors.Errorf("failed to get value: %w", err)
+		return fmt.Errorf("failed to get value: %w", err)
 	}
 
 	buf, err := item.Value()
 	if err != nil {
-		return xerrors.Errorf("failed to get item value: %w", err)
+		return fmt.Errorf("failed to get item value: %w", err)
 	}
 
 	if err := json.Unmarshal(buf, value); err != nil {
-		return xerrors.Errorf("failed to decode the value: %w", err)
+		return fmt.Errorf("failed to decode the value: %w", err)
 	}
 
 	return nil
@@ -106,7 +108,7 @@ func (tx *Tx) Delete(key string) error {
 		if err == badger.ErrKeyNotFound {
 			return ErrKeyNotFound
 		}
-		return xerrors.Errorf("failed to delete value: %w", err)
+		return fmt.Errorf("failed to delete value: %w", err)
 	}
 
 	return nil
@@ -141,10 +143,10 @@ func (it *Iterator) Get(value interface{}) (key string, err error) {
 	key = string(item.Key())
 
 	if buf, verr := item.Value(); verr != nil {
-		err = xerrors.Errorf("failed to get item value: %w", verr)
+		err = fmt.Errorf("failed to get item value: %w", verr)
 	} else {
 		if uerr := json.Unmarshal(buf, value); uerr != nil {
-			err = xerrors.Errorf("failed to decode the value: %w", uerr)
+			err = fmt.Errorf("failed to decode the value: %w", uerr)
 		}
 	}
 

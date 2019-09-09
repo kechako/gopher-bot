@@ -17,9 +17,7 @@ type Store struct {
 }
 
 func New(dir string) (*Store, error) {
-	opts := badger.DefaultOptions
-	opts.Dir = dir
-	opts.ValueDir = dir
+	opts := badger.DefaultOptions(dir)
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open databsae: %w", err)
@@ -90,13 +88,15 @@ func (tx *Tx) Get(key string, value interface{}) error {
 		return fmt.Errorf("failed to get value: %w", err)
 	}
 
-	buf, err := item.Value()
+	err = item.Value(func(buf []byte) error {
+		if err := json.Unmarshal(buf, value); err != nil {
+			return fmt.Errorf("failed to decode the value: %w", err)
+		}
+
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("failed to get item value: %w", err)
-	}
-
-	if err := json.Unmarshal(buf, value); err != nil {
-		return fmt.Errorf("failed to decode the value: %w", err)
 	}
 
 	return nil
@@ -142,12 +142,15 @@ func (it *Iterator) Get(value interface{}) (key string, err error) {
 	item := it.it.Item()
 	key = string(item.Key())
 
-	if buf, verr := item.Value(); verr != nil {
-		err = fmt.Errorf("failed to get item value: %w", verr)
-	} else {
-		if uerr := json.Unmarshal(buf, value); uerr != nil {
-			err = fmt.Errorf("failed to decode the value: %w", uerr)
+	err = item.Value(func(buf []byte) error {
+		if err := json.Unmarshal(buf, value); err != nil {
+			return fmt.Errorf("failed to decode the value: %w", err)
 		}
+
+		return nil
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to get item value: %w", err)
 	}
 
 	return

@@ -8,6 +8,7 @@ require (
 	github.com/google/go-cmp v0.3.0
 	github.com/kechako/sigctx v0.1.0
 	github.com/mattn/go-runewidth v0.0.4
+	github.com/robfig/cron/v3 v3.0.0
 	golang.org/x/crypto v0.0.0-20190617133340-57b3e21c3d56 // indirect
 	golang.org/x/net v0.0.0-20190909003024-a7b16738d86b // indirect
 	golang.org/x/sys v0.0.0-20190909082730-f460065e899a // indirect

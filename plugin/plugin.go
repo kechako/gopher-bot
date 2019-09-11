@@ -27,6 +27,8 @@ type Bot interface {
 	Post(channelID string, text string)
 	// Mention posts a new message that mentions to the user to the channel.
 	Mention(channelID, userID, text string)
+	// ProcessCommmand processes the specified command on the channel.
+	ProcessCommand(channelID string, command string)
 }
 
 // Bot is the interface that represents a service message.

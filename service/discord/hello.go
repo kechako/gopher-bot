@@ -45,3 +45,8 @@ func (b *bot) Post(channelID string, text string) {
 func (b *bot) Mention(channelID, userID, text string) {
 	b.service.Mention(channelID, userID, text)
 }
+
+// ProcessCommand implements the plugin.Bot interface.
+func (b *bot) ProcessCommand(channelID string, command string) {
+	b.service.ProcessCommand(channelID, command)
+}

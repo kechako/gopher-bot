@@ -80,6 +80,16 @@ func (s *discordService) Mention(channelID, userID, text string) {
 	}
 }
 
+// ProcessCommmand processes the specified command on the channel.
+func (s *discordService) ProcessCommand(channelID string, command string) {
+	go func() {
+		s.ch <- &service.Event{
+			Type: service.MessageEvent,
+			Data: newCommandMessage(s, channelID, command),
+		}
+	}()
+}
+
 // EscapeHelp implements the service.Service interface.
 func (s *discordService) EscapeHelp(help string) string {
 	escaped := bytes.NewBuffer(make([]byte, len(help)+8))

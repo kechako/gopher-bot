@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/kechako/gopher-bot/location/internal/data"
+	"github.com/kechako/gopher-bot/internal/location/data"
 )
 
 var (

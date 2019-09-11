@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/kechako/gopher-bot/location/internal/data"
+	"github.com/kechako/gopher-bot/internal/location/data"
 )
 
 type addCommand struct{}

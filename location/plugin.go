@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/kechako/gopher-bot/location/internal/command"
+	"github.com/kechako/gopher-bot/internal/location/command"
 	"github.com/kechako/gopher-bot/plugin"
 )
 

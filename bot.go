@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -67,6 +68,12 @@ func (b *Bot) init() error {
 }
 
 func (b *Bot) Close() error {
+	for _, p := range b.plugins {
+		if c, ok := p.(io.Closer); ok {
+			c.Close()
+		}
+	}
+
 	return b.store.Close()
 }
 

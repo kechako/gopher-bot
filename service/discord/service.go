@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
+	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
 )
 
@@ -88,6 +89,20 @@ func (s *discordService) ProcessCommand(channelID string, command string) {
 			Data: newCommandMessage(s, channelID, command),
 		}
 	}()
+}
+
+// Channel returns a channel of specified channelID.
+func (s *discordService) Channel(channelID string) plugin.Channel {
+	ch, err := s.session.Channel(channelID)
+	if err != nil {
+		// TODO : output log
+		return nil
+	}
+
+	return &channel{
+		id:   ch.ID,
+		name: ch.Name,
+	}
 }
 
 // EscapeHelp implements the service.Service interface.

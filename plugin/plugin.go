@@ -29,6 +29,16 @@ type Bot interface {
 	Mention(channelID, userID, text string)
 	// ProcessCommmand processes the specified command on the channel.
 	ProcessCommand(channelID string, command string)
+	// Channel returns a channel of specified channelID.
+	Channel(channelID string) Channel
+}
+
+// Channel is the interface that represents a chanel.
+type Channel interface {
+	// ID is an ID of the channel.
+	ID() string
+	// Name is a name of the channel.
+	Name() string
 }
 
 // Bot is the interface that represents a service message.

@@ -14,7 +14,7 @@ func (cmd *removeCommand) Name() string {
 }
 
 func (cmd *removeCommand) HelpCommand() string {
-	return "remove <name> <latitude> <longitude>"
+	return "remove <name>"
 }
 
 func (cmd *removeCommand) Description() string {

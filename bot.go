@@ -153,7 +153,7 @@ func callPluginHello(ctx context.Context, plugin plugin.Plugin, hello plugin.Hel
 
 func (b *Bot) doAction(ctx context.Context, msg plugin.Message) {
 	if msg.MentionTo(b.service.UserID()) && strings.Contains(msg.Text(), "help") {
-		b.postHelp(ctx, msg.ChannelID())
+		b.postHelp(ctx, msg)
 		return
 	}
 
@@ -187,7 +187,7 @@ func callPluginDoAction(ctx context.Context, plugin plugin.Plugin, msg plugin.Me
 	}
 }
 
-func (b *Bot) postHelp(ctx context.Context, channelID string) {
+func (b *Bot) postHelp(ctx context.Context, msg plugin.Message) {
 	var doc strings.Builder
 
 	for i, p := range b.plugins {
@@ -203,7 +203,7 @@ func (b *Bot) postHelp(ctx context.Context, channelID string) {
 	}
 
 	escaped := b.service.EscapeHelp(doc.String())
-	b.service.Post(channelID, escaped)
+	msg.Post(escaped)
 }
 
 func callPluginHelp(ctx context.Context, p plugin.Plugin) *plugin.Help {

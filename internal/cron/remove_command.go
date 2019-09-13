@@ -39,9 +39,7 @@ func (cmd *removeCommand) Execute(ctx context.Context, params []string, channel 
 		return "", fmt.Errorf("failed to remove a schedule %s: %w", name, err)
 	}
 
-	if err := cmd.scheduler.resetScheduler(ctx); err != nil {
-		return "", fmt.Errorf("failed to reset scheduler: %w", err)
-	}
+	cmd.scheduler.removeSchedule(ctx, name)
 
 	return fmt.Sprintf("Success to remove a schedule : %s", name), nil
 }

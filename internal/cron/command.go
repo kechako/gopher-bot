@@ -12,7 +12,7 @@ import (
 
 type scheduler interface {
 	addSchedule(ctx context.Context, s *data.Schedule) error
-	resetScheduler(ctx context.Context) error
+	removeSchedule(ctx context.Context, name string)
 }
 
 var (
@@ -36,7 +36,9 @@ type CommandFunc func(channelID string, command string)
 type Cron struct {
 	commanders   []Commander
 	commanderMap map[string]Commander
-	cron         *cron.Cron
+
+	cron    *cron.Cron
+	entries map[string]cron.EntryID
 
 	bot Bot
 }
@@ -46,6 +48,8 @@ var _ scheduler = (*Cron)(nil)
 func New(bot Bot) *Cron {
 	c := &Cron{
 		commanderMap: make(map[string]Commander),
+		cron:         cron.New(cron.WithParser(cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow))),
+		entries:      make(map[string]cron.EntryID),
 		bot:          bot,
 	}
 	c.commanders = []Commander{
@@ -74,7 +78,18 @@ func (c *Cron) init() {
 }
 
 func (c *Cron) Start(ctx context.Context) error {
-	return c.resetScheduler(ctx)
+	schedules, err := data.GetSchedules(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, s := range schedules {
+		c.addSchedule(ctx, s)
+	}
+
+	c.cron.Start()
+
+	return nil
 }
 
 func (c *Cron) Close() error {
@@ -111,31 +126,23 @@ func (c *Cron) HelpCommands(name string) []*plugin.Command {
 }
 
 func (c *Cron) addSchedule(ctx context.Context, s *data.Schedule) error {
-	_, err := c.cron.AddFunc(s.Fields, cron.FuncJob(func() {
+	id, err := c.cron.AddFunc(s.Fields, cron.FuncJob(func() {
 		c.bot.ProcessCommand(s.Channel, s.Command)
 	}))
 	if err != nil {
 		return err
 	}
 
+	c.entries[s.Name] = id
+
 	return nil
 }
 
-func (c *Cron) resetScheduler(ctx context.Context) error {
-	if c.cron != nil {
-		c.cron.Stop()
+func (c *Cron) removeSchedule(ctx context.Context, name string) {
+	id, ok := c.entries[name]
+	if !ok {
+		return
 	}
 
-	schedules, err := data.GetSchedules(ctx)
-	if err != nil {
-		return err
-	}
-
-	c.cron = cron.New(cron.WithParser(cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)))
-	for _, s := range schedules {
-		c.addSchedule(ctx, s)
-	}
-	c.cron.Start()
-
-	return nil
+	c.cron.Remove(id)
 }

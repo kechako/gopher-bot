@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/kechako/gopher-bot/internal/store"
@@ -21,6 +22,8 @@ type Bot struct {
 
 	store    *store.Store
 	storeDir string
+
+	helloOnce sync.Once
 }
 
 // New returns a new *Bot.
@@ -121,9 +124,11 @@ loop:
 }
 
 func (b *Bot) hello(ctx context.Context, hello plugin.Hello) {
-	for _, p := range b.plugins {
-		callPluginHello(ctx, p, hello)
-	}
+	b.helloOnce.Do(func() {
+		for _, p := range b.plugins {
+			callPluginHello(ctx, p, hello)
+		}
+	})
 }
 
 func callPluginHello(ctx context.Context, plugin plugin.Plugin, hello plugin.Hello) {

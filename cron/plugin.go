@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kechako/gopher-bot/internal/cron"
+	"github.com/kechako/gopher-bot/logger"
 	"github.com/kechako/gopher-bot/plugin"
 )
 
@@ -31,7 +32,7 @@ func (p *cronPlugin) Hello(ctx context.Context, hello plugin.Hello) {
 	p.cron = cron.New(&cronBot{plugin: p})
 
 	if err := p.cron.Start(ctx); err != nil {
-		// TODO: output log
+		logger.FromContext(ctx).Error("failed to start cron: ", err)
 	}
 }
 
@@ -47,7 +48,8 @@ func (p *cronPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 			msg.PostHelp(p.Help(ctx))
 			return
 		}
-		// TODO: output error log
+
+		logger.FromContext(ctx).Error("cron: ", err)
 		return
 	}
 

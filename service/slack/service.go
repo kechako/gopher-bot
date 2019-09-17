@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kechako/gopher-bot/logger"
 	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
 	"github.com/kechako/gopher-bot/service/slack/internal/msgfmt"
@@ -18,6 +19,8 @@ import (
 type slackService struct {
 	client *slack.Client
 	rtm    *slack.RTM
+
+	l logger.Logger
 
 	ch chan *service.Event
 
@@ -43,6 +46,10 @@ func New(token string) (service.Service, error) {
 
 // Start implements the service.Service interface.
 func (s *slackService) Start(ctx context.Context) (<-chan *service.Event, error) {
+	s.l = logger.FromContext(ctx)
+
+	s.l.Info("Start Slack bot service")
+
 	_, err := s.client.AuthTestContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to authenticate slack service: %w", err)
@@ -70,17 +77,16 @@ loop:
 		case msg := <-s.rtm.IncomingEvents:
 			switch ev := msg.Data.(type) {
 			case *slack.HelloEvent:
-				// TODO : logging
+				s.l.Info("Slack connection is ready")
 				s.handleHello()
 			case *slack.ConnectedEvent:
-				// TODO : logging
+				s.l.Info("Slack connection is connected")
 			case *slack.DisconnectedEvent:
-				// TODO : logging
+				s.l.Info("Slack connection is disconnected")
 				if ev.Intentional {
 					break loop
 				}
 			case *slack.MessageEvent:
-				// TODO : logging
 				s.handleMessage(ev)
 			}
 		}
@@ -169,7 +175,7 @@ func (s *slackService) Channel(channelID string) plugin.Channel {
 
 	ch, err := s.client.GetChannelInfo(channelID)
 	if err != nil {
-		// TODO: logging
+		s.l.Error("Failed to get channel info : %s", channelID)
 		return nil
 	}
 

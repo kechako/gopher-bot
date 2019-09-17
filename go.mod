@@ -6,6 +6,7 @@ require (
 	github.com/dgraph-io/badger v1.6.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.3.0
+	github.com/kechako/logger v0.2.0
 	github.com/kechako/sigctx v0.1.0
 	github.com/mattn/go-runewidth v0.0.4
 	github.com/nlopes/slack v0.6.0

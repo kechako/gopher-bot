@@ -31,6 +31,8 @@ github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
+github.com/kechako/logger v0.2.0 h1:m2/o2np+XqjjC5XuFYyfB5K3O4W9Y0d7WPn3UJNHCRU=
+github.com/kechako/logger v0.2.0/go.mod h1:AfdYDph9Smr9xIMirG4SLwmKTfMBFcs1w16zKkhwgh0=
 github.com/kechako/sigctx v0.1.0 h1:dAdloJdglZHVzUmc2YRGJdJMsIKkwRdyzd9LFxBolhQ=
 github.com/kechako/sigctx v0.1.0/go.mod h1:IfDEhAeTcpxnSS+y74G47h/tdw/U/Kp+CmaOlzZMyaw=
 github.com/magiconair/properties v1.8.0/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=

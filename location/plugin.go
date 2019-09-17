@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kechako/gopher-bot/internal/location/command"
+	"github.com/kechako/gopher-bot/logger"
 	"github.com/kechako/gopher-bot/plugin"
 )
 
@@ -38,7 +39,8 @@ func (p *locationPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 			msg.PostHelp(p.Help(ctx))
 			return
 		}
-		// TODO: output error log
+
+		logger.FromContext(ctx).Error("location: ", err)
 		return
 	}
 

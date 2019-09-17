@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
+	"github.com/kechako/gopher-bot/logger"
 	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
 )
@@ -16,6 +17,7 @@ import (
 type discordService struct {
 	session *discord.Session
 	ch      chan *service.Event
+	l       logger.Logger
 }
 
 // New returns a new Discord service as service.Service.
@@ -39,6 +41,10 @@ func New(token string) (service.Service, error) {
 
 // Start implements the service.Service interface.
 func (s *discordService) Start(ctx context.Context) (<-chan *service.Event, error) {
+	s.l = logger.FromContext(ctx)
+
+	s.l.Info("Start Discord bot service")
+
 	s.ch = make(chan *service.Event)
 
 	if err := s.session.Open(); err != nil {
@@ -63,7 +69,7 @@ func (s *discordService) UserID() string {
 func (s *discordService) Post(channelID, text string) {
 	_, err := s.session.ChannelMessageSend(channelID, text)
 	if err != nil {
-		// TODO: output error log
+		s.l.Error("Failed to post message to %s", channelID)
 	}
 }
 
@@ -71,13 +77,13 @@ func (s *discordService) Post(channelID, text string) {
 func (s *discordService) Mention(channelID, userID, text string) {
 	user, err := s.session.User(userID)
 	if err != nil {
-		// TODO: output error log
+		s.l.Error("Failed to get user info : %s", userID)
 	}
 
 	text = user.Mention() + text
 	_, err = s.session.ChannelMessageSend(channelID, text)
 	if err != nil {
-		// TODO: output error log
+		s.l.Error("Failed to post mention message to %s", channelID)
 	}
 }
 
@@ -95,7 +101,7 @@ func (s *discordService) ProcessCommand(channelID string, command string) {
 func (s *discordService) Channel(channelID string) plugin.Channel {
 	ch, err := s.session.Channel(channelID)
 	if err != nil {
-		// TODO : output log
+		s.l.Error("Failed to get channel info : %s", channelID)
 		return nil
 	}
 
@@ -122,6 +128,14 @@ func (s *discordService) EscapeHelp(help string) string {
 
 // addHandlers adds discord event handlers.
 func (s *discordService) addHandlers() {
+	s.session.AddHandler(func(session *discord.Session, event *discord.Connect) {
+		s.handleConnect(event)
+	})
+
+	s.session.AddHandler(func(session *discord.Session, event *discord.Disconnect) {
+		s.handleDisconnect(event)
+	})
+
 	s.session.AddHandler(func(session *discord.Session, event *discord.Ready) {
 		s.handleReady(event)
 	})
@@ -131,8 +145,20 @@ func (s *discordService) addHandlers() {
 	})
 }
 
+// handleConnect handles the Connect event.
+func (s *discordService) handleConnect(msg *discord.Connect) {
+	s.l.Info("Discord session is connected")
+}
+
+// handleDisconnect handles the Disconnect event.
+func (s *discordService) handleDisconnect(msg *discord.Disconnect) {
+	s.l.Info("Discord session is disconnected")
+}
+
 // handleReady handles the Ready event.
 func (s *discordService) handleReady(msg *discord.Ready) {
+	s.l.Info("Discord session is ready")
+
 	s.ch <- &service.Event{
 		Type: service.ConnectedEvent,
 		Data: newHello(s),

@@ -9,6 +9,7 @@ import (
 	bot "github.com/kechako/gopher-bot"
 	"github.com/kechako/gopher-bot/examples/plugins/echo"
 	"github.com/kechako/gopher-bot/service/discord"
+	"github.com/kechako/logger"
 	"github.com/kechako/sigctx"
 )
 
@@ -22,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	b, err := bot.New(service)
+	b, err := bot.New(service, bot.WithLogger(logger.New()))
 	if err != nil {
 		log.Fatal(err)
 	}

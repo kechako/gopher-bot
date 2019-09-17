@@ -38,7 +38,7 @@ func (m *message) init() {
 			if b.Label == "" {
 				user, err := m.service.client.GetUserInfo(b.Content)
 				if err != nil {
-					// TODO : Output log
+					m.service.l.Errorf("Failed to get user info : %s", b.Content)
 				} else {
 					b.Label = user.Name
 				}

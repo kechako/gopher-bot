@@ -18,6 +18,9 @@ type Store struct {
 
 func New(dir string) (*Store, error) {
 	opts := badger.DefaultOptions(dir)
+	opts.ValueLogFileSize = 256 << 20
+	opts.LevelOneSize = 64 << 20
+	opts.MaxTableSize = 16 << 20
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open databsae: %w", err)

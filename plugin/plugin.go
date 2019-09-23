@@ -31,6 +31,8 @@ type Bot interface {
 	ProcessCommand(channelID string, command string)
 	// Channel returns a channel of specified channelID.
 	Channel(channelID string) Channel
+	// User returns a user of specified userID.
+	User(userID string) User
 }
 
 // Channel is the interface that represents a chanel.
@@ -38,6 +40,14 @@ type Channel interface {
 	// ID is an ID of the channel.
 	ID() string
 	// Name is a name of the channel.
+	Name() string
+}
+
+// User is the interface that represents a user.
+type User interface {
+	// ID is an ID of the user.
+	ID() string
+	// Name is a name of the user.
 	Name() string
 }
 

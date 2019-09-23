@@ -185,6 +185,25 @@ func (s *slackService) Channel(channelID string) plugin.Channel {
 	}
 }
 
+// User returns a user of specified userID.
+func (s *slackService) User(userID string) plugin.User {
+	if len(userID) == 0 || userID[0] != 'U' {
+		// ignore group
+		return nil
+	}
+
+	u, err := s.client.GetUserInfo(userID)
+	if err != nil {
+		s.l.Error("Failed to get user info : %s", userID)
+		return nil
+	}
+
+	return &user{
+		id:   u.ID,
+		name: u.Name,
+	}
+}
+
 // EscapeHelp implements the service.Service interface.
 func (s *slackService) EscapeHelp(help string) string {
 	escaped := bytes.NewBuffer(make([]byte, len(help)+8))

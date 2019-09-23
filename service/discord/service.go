@@ -111,6 +111,20 @@ func (s *discordService) Channel(channelID string) plugin.Channel {
 	}
 }
 
+// User returns a user of specified userID.
+func (s *discordService) User(userID string) plugin.User {
+	u, err := s.session.User(userID)
+	if err != nil {
+		s.l.Error("Failed to get user info : %s", userID)
+		return nil
+	}
+
+	return &user{
+		id:   u.ID,
+		name: u.Username,
+	}
+}
+
 // EscapeHelp implements the service.Service interface.
 func (s *discordService) EscapeHelp(help string) string {
 	escaped := bytes.NewBuffer(make([]byte, len(help)+8))

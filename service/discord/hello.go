@@ -55,3 +55,8 @@ func (b *bot) ProcessCommand(channelID string, command string) {
 func (b *bot) Channel(channelID string) plugin.Channel {
 	return b.service.Channel(channelID)
 }
+
+// User implements the plugin.Bot interface.
+func (b *bot) User(userID string) plugin.User {
+	return b.service.User(userID)
+}

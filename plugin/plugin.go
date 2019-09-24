@@ -49,6 +49,10 @@ type User interface {
 	ID() string
 	// Name is a name of the user.
 	Name() string
+	// FullName is a full name of the user.
+	FullName() string
+	// DisplayName is a full name of the user.
+	DisplayName() string
 }
 
 // Bot is the interface that represents a service message.

@@ -199,8 +199,10 @@ func (s *slackService) User(userID string) plugin.User {
 	}
 
 	return &user{
-		id:   u.ID,
-		name: u.Name,
+		id:          u.ID,
+		name:        u.Name,
+		fullName:    u.RealName,
+		displayName: u.Profile.DisplayName,
 	}
 }
 

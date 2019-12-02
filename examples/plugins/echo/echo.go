@@ -1,3 +1,4 @@
+// Package echo is a plugin to echo messages.
 package echo
 
 import (

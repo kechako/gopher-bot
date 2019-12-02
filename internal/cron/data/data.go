@@ -1,3 +1,4 @@
+// Package data accesses stored cron data.
 package data
 
 import (

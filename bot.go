@@ -1,3 +1,4 @@
+// Package bot implements core functions for a bot service.
 package bot
 
 import (

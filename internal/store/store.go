@@ -1,3 +1,4 @@
+// Package store provides data store for gopher-bot.
 package store
 
 import (

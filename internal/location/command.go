@@ -1,3 +1,4 @@
+// Package location provides commands to manage locations.
 package location
 
 import (

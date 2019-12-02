@@ -1,3 +1,4 @@
+// Package cron provides commands to manage cron schedules.
 package cron
 
 import (

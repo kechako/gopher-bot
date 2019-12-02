@@ -1,3 +1,4 @@
+// Package service provides interfaces for bot service.
 package service
 
 import (

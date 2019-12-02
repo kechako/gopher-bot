@@ -1,3 +1,4 @@
+// Package msgfmt parses message block from message text.
 package msgfmt
 
 import (

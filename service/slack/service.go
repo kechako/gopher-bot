@@ -1,3 +1,4 @@
+// Package slack provides a bot service of Slack.
 package slack
 
 import (

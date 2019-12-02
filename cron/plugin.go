@@ -1,3 +1,4 @@
+// Package cron is a plugin to manage cron schedules.
 package cron
 
 import (

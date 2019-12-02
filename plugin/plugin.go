@@ -1,3 +1,4 @@
+// A plugin package provides interfaces for gopher-bot plugins.
 package plugin
 
 import (

@@ -1,3 +1,4 @@
+// Package util provides utility functions for plugins.
 package util
 
 import "strings"

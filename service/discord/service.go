@@ -1,3 +1,4 @@
+// Package discord provides a bot service of Discord.
 package discord
 
 import (

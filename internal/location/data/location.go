@@ -1,3 +1,4 @@
+// Package data accesses stored location data.
 package data
 
 import (

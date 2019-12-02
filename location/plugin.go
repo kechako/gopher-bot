@@ -1,3 +1,4 @@
+// Package location is a plugin to manage locations.
 package location
 
 import (

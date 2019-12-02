@@ -1,3 +1,4 @@
+// Package logger provides a interface for logging.
 package logger
 
 import (

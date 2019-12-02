@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/kechako/gopher-bot/internal/location/command"
+	"github.com/kechako/gopher-bot/internal/location"
 	"github.com/kechako/gopher-bot/logger"
 	"github.com/kechako/gopher-bot/plugin"
 )
@@ -12,7 +12,7 @@ import (
 const commandName = "loc"
 
 type locationPlugin struct {
-	cmd *command.Command
+	cmd *location.Command
 }
 
 var _ plugin.Plugin = (*locationPlugin)(nil)
@@ -20,7 +20,7 @@ var _ plugin.Plugin = (*locationPlugin)(nil)
 // NewPlugin returns a new plugin.Plugin that manages locations.
 func NewPlugin() plugin.Plugin {
 	return &locationPlugin{
-		cmd: command.New(),
+		cmd: location.New(),
 	}
 }
 
@@ -35,7 +35,7 @@ func (p *locationPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 
 	retMsg, err := p.cmd.Execute(ctx, params[1:])
 	if err != nil {
-		if err == command.CommandSyntaxError {
+		if err == location.CommandSyntaxError {
 			msg.PostHelp(p.Help(ctx))
 			return
 		}

@@ -8,12 +8,13 @@ import (
 	"fmt"
 	"strings"
 
+	"sync"
+
 	"github.com/kechako/gopher-bot/logger"
 	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
 	"github.com/kechako/gopher-bot/service/slack/internal/msgfmt"
 	"github.com/nlopes/slack"
-	"sync"
 )
 
 // slackService represents a service for Slack.
@@ -73,26 +74,22 @@ func (s *slackService) loop(ctx context.Context) {
 	defer s.wg.Done()
 
 loop:
-	for {
-		select {
-		case msg := <-s.rtm.IncomingEvents:
-			switch ev := msg.Data.(type) {
-			case *slack.HelloEvent:
-				s.l.Info("Slack connection is ready")
-				s.handleHello()
-			case *slack.ConnectedEvent:
-				s.l.Info("Slack connection is connected")
-			case *slack.DisconnectedEvent:
-				s.l.Info("Slack connection is disconnected")
-				if ev.Intentional {
-					break loop
-				}
-			case *slack.MessageEvent:
-				s.handleMessage(ev)
+	for msg := range s.rtm.IncomingEvents {
+		switch ev := msg.Data.(type) {
+		case *slack.HelloEvent:
+			s.l.Info("Slack connection is ready")
+			s.handleHello()
+		case *slack.ConnectedEvent:
+			s.l.Info("Slack connection is connected")
+		case *slack.DisconnectedEvent:
+			s.l.Info("Slack connection is disconnected")
+			if ev.Intentional {
+				break loop
 			}
+		case *slack.MessageEvent:
+			s.handleMessage(ev)
 		}
 	}
-
 }
 
 // handleHello handles the hello event.

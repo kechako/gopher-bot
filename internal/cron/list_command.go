@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kechako/gopher-bot/internal/database"
+	"github.com/kechako/gopher-bot/v2/internal/database"
 )
 
 type listCommand struct {

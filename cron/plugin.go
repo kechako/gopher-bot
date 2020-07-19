@@ -5,9 +5,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/kechako/gopher-bot/internal/cron"
-	"github.com/kechako/gopher-bot/logger"
-	"github.com/kechako/gopher-bot/plugin"
+	"github.com/kechako/gopher-bot/v2/internal/cron"
+	"github.com/kechako/gopher-bot/v2/logger"
+	"github.com/kechako/gopher-bot/v2/plugin"
 )
 
 const commandName = "cron"

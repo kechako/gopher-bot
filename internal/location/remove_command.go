@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kechako/gopher-bot/internal/database"
+	"github.com/kechako/gopher-bot/v2/internal/database"
 )
 
 type removeCommand struct{}

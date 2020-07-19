@@ -3,8 +3,8 @@ package slack
 import (
 	"strings"
 
-	"github.com/kechako/gopher-bot/plugin"
-	"github.com/kechako/gopher-bot/service/slack/internal/msgfmt"
+	"github.com/kechako/gopher-bot/v2/plugin"
+	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
 	"github.com/nlopes/slack"
 )
 

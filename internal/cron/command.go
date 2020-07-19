@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kechako/gopher-bot/internal/database"
-	"github.com/kechako/gopher-bot/plugin"
+	"github.com/kechako/gopher-bot/v2/internal/database"
+	"github.com/kechako/gopher-bot/v2/plugin"
 	cron "github.com/robfig/cron/v3"
 )
 

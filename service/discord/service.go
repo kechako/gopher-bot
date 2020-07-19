@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
-	"github.com/kechako/gopher-bot/logger"
-	"github.com/kechako/gopher-bot/plugin"
-	"github.com/kechako/gopher-bot/service"
+	"github.com/kechako/gopher-bot/v2/logger"
+	"github.com/kechako/gopher-bot/v2/plugin"
+	"github.com/kechako/gopher-bot/v2/service"
 )
 
 // discordService represents a service for Discord.

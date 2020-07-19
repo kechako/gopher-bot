@@ -10,10 +10,10 @@ import (
 
 	"sync"
 
-	"github.com/kechako/gopher-bot/logger"
-	"github.com/kechako/gopher-bot/plugin"
-	"github.com/kechako/gopher-bot/service"
-	"github.com/kechako/gopher-bot/service/slack/internal/msgfmt"
+	"github.com/kechako/gopher-bot/v2/logger"
+	"github.com/kechako/gopher-bot/v2/plugin"
+	"github.com/kechako/gopher-bot/v2/service"
+	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
 	"github.com/nlopes/slack"
 )
 

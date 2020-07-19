@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kechako/gopher-bot/internal/database"
-	"github.com/kechako/gopher-bot/logger"
-	"github.com/kechako/gopher-bot/plugin"
-	"github.com/kechako/gopher-bot/service"
+	"github.com/kechako/gopher-bot/v2/internal/database"
+	"github.com/kechako/gopher-bot/v2/logger"
+	"github.com/kechako/gopher-bot/v2/plugin"
+	"github.com/kechako/gopher-bot/v2/service"
 )
 
 // Bot represents a bot.

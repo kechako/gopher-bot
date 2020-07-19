@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	bot "github.com/kechako/gopher-bot"
-	"github.com/kechako/gopher-bot/examples/plugins/echo"
-	"github.com/kechako/gopher-bot/service/discord"
+	"github.com/kechako/gopher-bot/v2"
+	"github.com/kechako/gopher-bot/v2/examples/plugins/echo"
+	"github.com/kechako/gopher-bot/v2/service/discord"
 	"github.com/kechako/logger"
 	"github.com/kechako/sigctx"
 )

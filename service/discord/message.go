@@ -2,7 +2,7 @@ package discord
 
 import (
 	discord "github.com/bwmarrin/discordgo"
-	"github.com/kechako/gopher-bot/plugin"
+	"github.com/kechako/gopher-bot/v2/plugin"
 )
 
 type message struct {

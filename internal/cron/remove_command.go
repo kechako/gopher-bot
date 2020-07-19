@@ -2,9 +2,10 @@ package cron
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/kechako/gopher-bot/internal/cron/data"
+	"github.com/kechako/gopher-bot/internal/database"
 )
 
 type removeCommand struct {
@@ -29,11 +30,16 @@ func (cmd *removeCommand) Execute(ctx context.Context, params []string, channel 
 		return "", CommandSyntaxError
 	}
 
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return "", errors.New("failed to get database from context")
+	}
+
 	name := params[0]
 
-	err := data.RemoveSchedule(ctx, name)
+	err := db.DeleteScheduleByName(ctx, name)
 	if err != nil {
-		if err == data.ErrKeyNotFound {
+		if err == database.ErrNotFound {
 			return fmt.Sprintf("%s does not exist.", name), nil
 		}
 		return "", fmt.Errorf("failed to remove a schedule %s: %w", name, err)

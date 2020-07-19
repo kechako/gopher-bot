@@ -7,11 +7,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/kechako/gopher-bot/internal/store"
+	"github.com/kechako/gopher-bot/internal/database"
 	"github.com/kechako/gopher-bot/logger"
 	"github.com/kechako/gopher-bot/plugin"
 	"github.com/kechako/gopher-bot/service"
@@ -22,8 +23,8 @@ type Bot struct {
 	service service.Service
 	plugins []plugin.Plugin
 
-	store    *store.Store
-	storeDir string
+	db          *database.DB
+	databaseDir string
 
 	l logger.Logger
 
@@ -49,27 +50,29 @@ func New(s service.Service, opts ...Option) (*Bot, error) {
 }
 
 func (b *Bot) init() error {
-	if b.storeDir == "" {
+	if b.databaseDir == "" {
 		dir, err := ioutil.TempDir(os.TempDir(), "gopher-bot")
 		if err != nil {
 			return fmt.Errorf("failed to create database dir: %w", err)
 		}
-		b.storeDir = dir
+		b.databaseDir = dir
 	} else {
-		if stat, err := os.Stat(b.storeDir); err != nil {
-			if err := os.MkdirAll(b.storeDir, 0755); err != nil {
+		if stat, err := os.Stat(b.databaseDir); err != nil {
+			if err := os.MkdirAll(b.databaseDir, 0755); err != nil {
 				return fmt.Errorf("failed to create database dir: %w", err)
 			}
 		} else if !stat.IsDir() {
-			return fmt.Errorf("%s is not a directory", b.storeDir)
+			return fmt.Errorf("%s is not a directory", b.databaseDir)
 		}
 	}
 
-	store, err := store.New(b.storeDir)
+	path := filepath.Join(b.databaseDir, "gopher-bot.db")
+
+	db, err := database.Open(path)
 	if err != nil {
 		return err
 	}
-	b.store = store
+	b.db = db
 
 	if b.l == nil {
 		b.l = logger.NewNop()
@@ -85,7 +88,7 @@ func (b *Bot) Close() error {
 		}
 	}
 
-	return b.store.Close()
+	return b.db.Close()
 }
 
 // AddPlugin adds a plugin to the bot.
@@ -97,8 +100,8 @@ func (b *Bot) AddPlugin(p plugin.Plugin) {
 func (b *Bot) Run(ctx context.Context) error {
 	b.l.Info("Start to run bot service.")
 
-	// set database store to context
-	ctx = store.ContextWithStore(ctx, b.store)
+	// set database to context
+	ctx = database.ContextWithDB(ctx, b.db)
 
 	// set logger to context
 	ctx = logger.ContextWithLogger(ctx, b.l)
@@ -252,9 +255,9 @@ func (b *Bot) callPluginHelp(ctx context.Context, p plugin.Plugin) *plugin.Help 
 
 type Option func(bot *Bot)
 
-func WithStoreDir(dir string) Option {
+func WithDatabaseDir(dir string) Option {
 	return func(bot *Bot) {
-		bot.storeDir = dir
+		bot.databaseDir = dir
 	}
 }
 

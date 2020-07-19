@@ -2,10 +2,11 @@ package cron
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/kechako/gopher-bot/internal/cron/data"
+	"github.com/kechako/gopher-bot/internal/database"
 )
 
 type addCommand struct {
@@ -32,12 +33,17 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string, channel str
 		return "", err
 	}
 
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return "", errors.New("failed to get database from context")
+	}
+
 	if err := cmd.scheduler.addSchedule(ctx, sch); err != nil {
 		return "", CommandSyntaxError
 	}
 
-	if err := data.AddSchedule(ctx, sch); err != nil {
-		if err == data.ErrDuplicated {
+	if err := db.SaveSchedule(ctx, sch); err != nil {
+		if err == database.ErrDuplicated {
 			return fmt.Sprintf("%s already exists", sch.Name), nil
 		}
 
@@ -47,7 +53,7 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string, channel str
 	return fmt.Sprintf("Success to add a new schedule : %s [%s, %s, %s]", sch.Name, sch.Fields, sch.Command, cmd.bot.ChannelName(sch.Channel)), nil
 }
 
-func makeSchedule(params []string, channel string) (*data.Schedule, error) {
+func makeSchedule(params []string, channel string) (*database.Schedule, error) {
 	if len(params) < 7 {
 		return nil, CommandSyntaxError
 	}
@@ -56,7 +62,7 @@ func makeSchedule(params []string, channel string) (*data.Schedule, error) {
 	fields := strings.Join(params[1:6], " ")
 	command := strings.Join(params[6:], " ")
 
-	return &data.Schedule{
+	return &database.Schedule{
 		Name:    name,
 		Fields:  fields,
 		Command: command,

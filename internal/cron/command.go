@@ -6,13 +6,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kechako/gopher-bot/internal/cron/data"
+	"github.com/kechako/gopher-bot/internal/database"
 	"github.com/kechako/gopher-bot/plugin"
 	cron "github.com/robfig/cron/v3"
 )
 
 type scheduler interface {
-	addSchedule(ctx context.Context, s *data.Schedule) error
+	addSchedule(ctx context.Context, s *database.Schedule) error
 	removeSchedule(ctx context.Context, name string)
 }
 
@@ -79,7 +79,12 @@ func (c *Cron) init() {
 }
 
 func (c *Cron) Start(ctx context.Context) error {
-	schedules, err := data.GetSchedules(ctx)
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return errors.New("failed to get database from context")
+	}
+
+	schedules, err := db.SearchSchedules(ctx)
 	if err != nil {
 		return err
 	}
@@ -126,7 +131,7 @@ func (c *Cron) HelpCommands(name string) []*plugin.Command {
 	return commands
 }
 
-func (c *Cron) addSchedule(ctx context.Context, s *data.Schedule) error {
+func (c *Cron) addSchedule(ctx context.Context, s *database.Schedule) error {
 	id, err := c.cron.AddFunc(s.Fields, cron.FuncJob(func() {
 		c.bot.ProcessCommand(s.Channel, s.Command)
 	}))

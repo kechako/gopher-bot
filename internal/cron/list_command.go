@@ -2,10 +2,11 @@ package cron
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/kechako/gopher-bot/internal/cron/data"
+	"github.com/kechako/gopher-bot/internal/database"
 )
 
 type listCommand struct {
@@ -29,7 +30,12 @@ func (cmd *listCommand) Execute(ctx context.Context, params []string, channel st
 		return "", CommandSyntaxError
 	}
 
-	sches, err := data.GetSchedules(ctx)
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return "", errors.New("failed to get database from context")
+	}
+
+	sches, err := db.SearchSchedules(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to get schedules: %w", err)
 	}

@@ -2,10 +2,11 @@ package location
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
-	"github.com/kechako/gopher-bot/internal/location/data"
+	"github.com/kechako/gopher-bot/internal/database"
 )
 
 type addCommand struct{}
@@ -29,8 +30,13 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string) (string, er
 		return "", err
 	}
 
-	if err := data.AddLocation(ctx, loc); err != nil {
-		if err == data.ErrDuplicated {
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return "", errors.New("failed to get database from context")
+	}
+
+	if err := db.SaveLocation(ctx, loc); err != nil {
+		if err == database.ErrDuplicated {
 			return fmt.Sprintf("%s already exists", loc.Name), nil
 		}
 
@@ -40,7 +46,7 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string) (string, er
 	return fmt.Sprintf("Success to add a new location : %s [%f, %f]", loc.Name, loc.Latitude, loc.Longitude), nil
 }
 
-func makeLocation(params []string) (*data.Location, error) {
+func makeLocation(params []string) (*database.Location, error) {
 	if len(params) != 3 {
 		return nil, CommandSyntaxError
 	}
@@ -57,7 +63,7 @@ func makeLocation(params []string) (*data.Location, error) {
 		return nil, CommandSyntaxError
 	}
 
-	return &data.Location{
+	return &database.Location{
 		Name:      name,
 		Latitude:  float32(lat),
 		Longitude: float32(lon),

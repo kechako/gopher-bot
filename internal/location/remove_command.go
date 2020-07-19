@@ -2,9 +2,10 @@ package location
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/kechako/gopher-bot/internal/location/data"
+	"github.com/kechako/gopher-bot/internal/database"
 )
 
 type removeCommand struct{}
@@ -27,11 +28,16 @@ func (cmd *removeCommand) Execute(ctx context.Context, params []string) (string,
 		return "", CommandSyntaxError
 	}
 
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return "", errors.New("failed to get database from context")
+	}
+
 	name := params[0]
 
-	err := data.RemoveLocation(ctx, name)
+	err := db.DeleteLocationByName(ctx, name)
 	if err != nil {
-		if err == data.ErrKeyNotFound {
+		if err == database.ErrNotFound {
 			return fmt.Sprintf("%s does not exist.", name), nil
 		}
 		return "", fmt.Errorf("failed to remove a location %s: %w", name, err)

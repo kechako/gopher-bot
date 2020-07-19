@@ -2,9 +2,10 @@ package location
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/kechako/gopher-bot/internal/location/data"
+	"github.com/kechako/gopher-bot/internal/database"
 )
 
 type changeCommand struct{}
@@ -28,8 +29,23 @@ func (cmd *changeCommand) Execute(ctx context.Context, params []string) (string,
 		return "", err
 	}
 
-	if err := data.UpdateLocation(ctx, loc); err != nil {
-		if err == data.ErrKeyNotFound {
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return "", errors.New("failed to get database from context")
+	}
+
+	oldloc, err := db.FindLocationByName(ctx, loc.Name)
+	if err != nil {
+		if err == database.ErrNotFound {
+			return fmt.Sprintf("%s does not exist.", loc.Name), nil
+		}
+		return "", fmt.Errorf("failed to update a location %s: %w", loc.Name, err)
+	}
+
+	loc.ID = oldloc.ID
+
+	if err := db.SaveLocation(ctx, loc); err != nil {
+		if err == database.ErrNotFound {
 			return fmt.Sprintf("%s does not exist.", loc.Name), nil
 		}
 		return "", fmt.Errorf("failed to update a location %s: %w", loc.Name, err)

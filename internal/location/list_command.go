@@ -2,10 +2,11 @@ package location
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/kechako/gopher-bot/internal/location/data"
+	"github.com/kechako/gopher-bot/internal/database"
 )
 
 type listCommand struct{}
@@ -27,7 +28,12 @@ func (cmd *listCommand) Execute(ctx context.Context, params []string) (string, e
 		return "", CommandSyntaxError
 	}
 
-	locs, err := data.GetLocations(ctx)
+	db, ok := database.FromContext(ctx)
+	if !ok {
+		return "", errors.New("failed to get database from context")
+	}
+
+	locs, err := db.SearchLocations(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to get locations: %w", err)
 	}

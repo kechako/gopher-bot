@@ -3,6 +3,8 @@ package plugin
 
 import (
 	"context"
+
+	"golang.org/x/exp/slog"
 )
 
 // Plugin is the interface implemented by bot plugins.
@@ -22,6 +24,8 @@ type Hello interface {
 
 // Bot is the interface that represents bot information.
 type Bot interface {
+	// Logger returns *slog.Logger
+	Logger() *slog.Logger
 	// UserID returns the user ID of the bot.
 	UserID() string
 	// Post posts a new message to the channel.

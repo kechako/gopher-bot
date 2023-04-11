@@ -6,23 +6,39 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"sync"
 
-	"github.com/kechako/gopher-bot/v2/logger"
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service"
 	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
 	"github.com/slack-go/slack"
+	"golang.org/x/exp/slog"
 )
+
+type Config struct {
+	Logger *slog.Logger
+}
+
+func (cfg *Config) logger() *slog.Logger {
+	var l *slog.Logger
+	if cfg != nil {
+		l = cfg.Logger
+	}
+	if l != nil {
+		return l
+	}
+	return slog.New(slog.NewTextHandler(os.Stdout))
+}
 
 // slackService represents a service for Slack.
 type slackService struct {
 	client *slack.Client
 	rtm    *slack.RTM
 
-	l logger.Logger
+	l *slog.Logger
 
 	ch chan *service.Event
 
@@ -31,7 +47,7 @@ type slackService struct {
 }
 
 // New returns a new Slack service as service.Service.
-func New(token string) (service.Service, error) {
+func New(token string, cfg *Config) (service.Service, error) {
 	if token == "" {
 		return nil, errors.New("the token is empty")
 	}
@@ -41,6 +57,7 @@ func New(token string) (service.Service, error) {
 	s := &slackService{
 		client: client,
 		rtm:    client.NewRTM(),
+		l:      cfg.logger(),
 	}
 
 	return s, nil
@@ -48,8 +65,6 @@ func New(token string) (service.Service, error) {
 
 // Start implements the service.Service interface.
 func (s *slackService) Start(ctx context.Context) (<-chan *service.Event, error) {
-	s.l = logger.FromContext(ctx)
-
 	s.l.Info("Start Slack bot service")
 
 	_, err := s.client.AuthTestContext(ctx)

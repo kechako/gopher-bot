@@ -6,6 +6,7 @@ import (
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
 	"github.com/slack-go/slack"
+	"golang.org/x/exp/slog"
 )
 
 type message struct {
@@ -38,7 +39,7 @@ func (m *message) init() {
 			if b.Label == "" {
 				user, err := m.service.client.GetUserInfo(b.Content)
 				if err != nil {
-					m.service.l.Errorf("Failed to get user info : %s", b.Content)
+					m.service.l.Error("failed to get user info", slog.String("content", b.Content))
 				} else {
 					b.Label = user.Name
 				}

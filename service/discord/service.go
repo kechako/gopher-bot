@@ -6,23 +6,39 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
-	"github.com/kechako/gopher-bot/v2/logger"
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service"
+	"golang.org/x/exp/slog"
 )
+
+type Config struct {
+	Logger *slog.Logger
+}
+
+func (cfg *Config) logger() *slog.Logger {
+	var l *slog.Logger
+	if cfg != nil {
+		l = cfg.Logger
+	}
+	if l != nil {
+		return l
+	}
+	return slog.New(slog.NewTextHandler(os.Stdout))
+}
 
 // discordService represents a service for Discord.
 type discordService struct {
 	session *discord.Session
 	ch      chan *service.Event
-	l       logger.Logger
+	l       *slog.Logger
 }
 
 // New returns a new Discord service as service.Service.
-func New(token string) (service.Service, error) {
+func New(token string, cfg *Config) (service.Service, error) {
 	if token == "" {
 		return nil, errors.New("the token is empty")
 	}
@@ -34,6 +50,7 @@ func New(token string) (service.Service, error) {
 
 	s := &discordService{
 		session: session,
+		l:       cfg.logger(),
 	}
 	s.addHandlers()
 
@@ -42,8 +59,6 @@ func New(token string) (service.Service, error) {
 
 // Start implements the service.Service interface.
 func (s *discordService) Start(ctx context.Context) (<-chan *service.Event, error) {
-	s.l = logger.FromContext(ctx)
-
 	s.l.Info("Start Discord bot service")
 
 	s.ch = make(chan *service.Event)

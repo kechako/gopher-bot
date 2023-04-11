@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/kechako/gopher-bot/v2"
+	bot "github.com/kechako/gopher-bot/v2"
 	"github.com/kechako/gopher-bot/v2/examples/plugins/echo"
 	"github.com/kechako/gopher-bot/v2/service/slack"
-	"github.com/kechako/logger"
 	"github.com/kechako/sigctx"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
@@ -18,12 +18,16 @@ func main() {
 	flag.StringVar(&token, "token", "", "Slack bot token.")
 	flag.Parse()
 
-	service, err := slack.New(token)
+	logger := slog.New(slog.NewTextHandler(os.Stdout))
+
+	service, err := slack.New(token, &slack.Config{
+		Logger: logger,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	b, err := bot.New(service, bot.WithLogger(logger.New()))
+	b, err := bot.New(service, bot.WithLogger(logger))
 	if err != nil {
 		log.Fatal(err)
 	}

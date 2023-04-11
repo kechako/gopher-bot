@@ -6,14 +6,15 @@ import (
 	"strings"
 
 	"github.com/kechako/gopher-bot/v2/internal/location"
-	"github.com/kechako/gopher-bot/v2/logger"
 	"github.com/kechako/gopher-bot/v2/plugin"
+	"golang.org/x/exp/slog"
 )
 
 const commandName = "loc"
 
 type locationPlugin struct {
 	cmd *location.Command
+	l   *slog.Logger
 }
 
 var _ plugin.Plugin = (*locationPlugin)(nil)
@@ -26,6 +27,7 @@ func NewPlugin() plugin.Plugin {
 }
 
 func (p *locationPlugin) Hello(ctx context.Context, hello plugin.Hello) {
+	p.l = hello.Bot().Logger().With(slog.String("plugin", "location"))
 }
 
 func (p *locationPlugin) DoAction(ctx context.Context, msg plugin.Message) {
@@ -41,7 +43,7 @@ func (p *locationPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 			return
 		}
 
-		logger.FromContext(ctx).Error("location: ", err)
+		p.l.Error("failed to do plugin action", slog.Any("err", err))
 		return
 	}
 

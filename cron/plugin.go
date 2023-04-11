@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/kechako/gopher-bot/v2/internal/cron"
-	"github.com/kechako/gopher-bot/v2/logger"
 	"github.com/kechako/gopher-bot/v2/plugin"
+	"golang.org/x/exp/slog"
 )
 
 const commandName = "cron"
@@ -15,6 +15,7 @@ const commandName = "cron"
 type cronPlugin struct {
 	bot  plugin.Bot
 	cron *cron.Cron
+	l    *slog.Logger
 }
 
 var _ plugin.Plugin = (*cronPlugin)(nil)
@@ -31,9 +32,10 @@ func (p *cronPlugin) Close() error {
 func (p *cronPlugin) Hello(ctx context.Context, hello plugin.Hello) {
 	p.bot = hello.Bot()
 	p.cron = cron.New(&cronBot{plugin: p})
+	p.l = hello.Bot().Logger().With(slog.String("plugin", "cron"))
 
 	if err := p.cron.Start(ctx); err != nil {
-		logger.FromContext(ctx).Error("failed to start cron: ", err)
+		p.l.Error("failed to start cron", slog.Any("err", err))
 	}
 }
 
@@ -50,7 +52,7 @@ func (p *cronPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 			return
 		}
 
-		logger.FromContext(ctx).Error("cron: ", err)
+		p.l.Error("failed to do plugin action", slog.Any("err", err))
 		return
 	}
 

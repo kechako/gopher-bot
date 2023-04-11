@@ -1,4 +1,4 @@
-// Package logger provides a interface for logging.
+// Deprecated: Package logger provides a interface for logging.
 package logger
 
 import (
@@ -50,10 +50,12 @@ type contextKey string
 
 const loggerContextKey = "logger"
 
+// Deprecated: ContextWithLogger no longer does anything.
 func ContextWithLogger(parent context.Context, l Logger) context.Context {
 	return context.WithValue(parent, loggerContextKey, l)
 }
 
+// Deprecated: FromContext only returns nop logger.
 func FromContext(ctx context.Context) Logger {
 	return ctx.Value(loggerContextKey).(Logger)
 }

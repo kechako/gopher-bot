@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/kechako/gopher-bot/v2/internal/database"
-	"github.com/kechako/gopher-bot/v2/logger"
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service"
+	"golang.org/x/exp/slog"
 )
 
 // Bot represents a bot.
@@ -26,7 +26,7 @@ type Bot struct {
 	db          *database.DB
 	databaseDir string
 
-	l logger.Logger
+	l *slog.Logger
 
 	helloOnce sync.Once
 }
@@ -75,7 +75,7 @@ func (b *Bot) init() error {
 	b.db = db
 
 	if b.l == nil {
-		b.l = logger.NewNop()
+		b.l = slog.New(slog.NewTextHandler(os.Stdout))
 	}
 
 	return nil
@@ -91,6 +91,10 @@ func (b *Bot) Close() error {
 	return b.db.Close()
 }
 
+func (b *Bot) Logger() *slog.Logger {
+	return b.l
+}
+
 // AddPlugin adds a plugin to the bot.
 func (b *Bot) AddPlugin(p plugin.Plugin) {
 	b.plugins = append(b.plugins, p)
@@ -102,9 +106,6 @@ func (b *Bot) Run(ctx context.Context) error {
 
 	// set database to context
 	ctx = database.ContextWithDB(ctx, b.db)
-
-	// set logger to context
-	ctx = logger.ContextWithLogger(ctx, b.l)
 
 	ch, err := b.service.Start(ctx)
 	if err != nil {
@@ -150,7 +151,7 @@ func (b *Bot) hello(ctx context.Context, hello plugin.Hello) {
 func (b *Bot) callPluginHello(ctx context.Context, plugin plugin.Plugin, hello plugin.Hello) {
 	defer func() {
 		if err := recover(); err != nil {
-			b.l.Errorf("plugin.Hello (%T): %v", plugin, err)
+			b.l.Error("recover plugin.Hello()", slog.Any("err", err))
 		}
 	}()
 
@@ -167,7 +168,7 @@ func (b *Bot) callPluginHello(ctx context.Context, plugin plugin.Plugin, hello p
 	case <-ch:
 	case <-ctx.Done():
 		if err := ctx.Err(); err != nil {
-			b.l.Errorf("plugin.Hello (%T): %v", plugin, err)
+			b.l.Error("abort plugin.Hello()", slog.Any("err", err))
 		}
 	}
 }
@@ -186,7 +187,7 @@ func (b *Bot) doAction(ctx context.Context, msg plugin.Message) {
 func (b *Bot) callPluginDoAction(ctx context.Context, plugin plugin.Plugin, msg plugin.Message) {
 	defer func() {
 		if err := recover(); err != nil {
-			b.l.Errorf("plugin.DoAction (%T): %v", plugin, err)
+			b.l.Error("recover plugin.DoAction()", slog.Any("err", err))
 		}
 	}()
 
@@ -203,7 +204,7 @@ func (b *Bot) callPluginDoAction(ctx context.Context, plugin plugin.Plugin, msg 
 	case <-ch:
 	case <-ctx.Done():
 		if err := ctx.Err(); err != nil {
-			b.l.Errorf("plugin.DoAction (%T): %v", plugin, err)
+			b.l.Error("abort plugin.DoAction()", slog.Any("err", err))
 		}
 	}
 }
@@ -230,7 +231,7 @@ func (b *Bot) postHelp(ctx context.Context, msg plugin.Message) {
 func (b *Bot) callPluginHelp(ctx context.Context, p plugin.Plugin) *plugin.Help {
 	defer func() {
 		if err := recover(); err != nil {
-			b.l.Errorf("plugin.Help (%T): %v", p, err)
+			b.l.Error("recover plugin.Help()", slog.Any("err", err))
 		}
 	}()
 
@@ -247,7 +248,7 @@ func (b *Bot) callPluginHelp(ctx context.Context, p plugin.Plugin) *plugin.Help 
 		return help
 	case <-ctx.Done():
 		if err := ctx.Err(); err != nil {
-			b.l.Errorf("plugin.Help (%T): %v", p, err)
+			b.l.Error("abort plugin.Help()", slog.Any("err", err))
 		}
 		return nil
 	}
@@ -261,7 +262,7 @@ func WithDatabaseDir(dir string) Option {
 	}
 }
 
-func WithLogger(l logger.Logger) Option {
+func WithLogger(l *slog.Logger) Option {
 	return func(bot *Bot) {
 		bot.l = l
 	}

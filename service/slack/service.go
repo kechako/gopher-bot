@@ -14,7 +14,7 @@ import (
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service"
 	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 // slackService represents a service for Slack.
@@ -171,7 +171,9 @@ func (s *slackService) Channel(channelID string) plugin.Channel {
 		return nil
 	}
 
-	ch, err := s.client.GetChannelInfo(channelID)
+	ch, err := s.client.GetConversationInfo(&slack.GetConversationInfoInput{
+		ChannelID: channelID,
+	})
 	if err != nil {
 		s.l.Error("Failed to get channel info : %s", channelID)
 		return nil

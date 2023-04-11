@@ -5,7 +5,7 @@ import (
 
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 type message struct {

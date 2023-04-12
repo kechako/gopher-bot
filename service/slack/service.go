@@ -15,6 +15,8 @@ import (
 	"github.com/kechako/gopher-bot/v2/service"
 	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
 	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
+	"github.com/slack-go/slack/socketmode"
 	"golang.org/x/exp/slog"
 )
 
@@ -36,7 +38,10 @@ func (cfg *Config) logger() *slog.Logger {
 // slackService represents a service for Slack.
 type slackService struct {
 	client *slack.Client
-	rtm    *slack.RTM
+	socket *socketmode.Client
+	botID  string
+	userID string
+	teamID string
 
 	l *slog.Logger
 
@@ -47,16 +52,16 @@ type slackService struct {
 }
 
 // New returns a new Slack service as service.Service.
-func New(token string, cfg *Config) (service.Service, error) {
+func New(token, appToken string, cfg *Config) (service.Service, error) {
 	if token == "" {
 		return nil, errors.New("the token is empty")
 	}
 
-	client := slack.New(token)
+	client := slack.New(token, slack.OptionAppLevelToken(appToken))
 
 	s := &slackService{
 		client: client,
-		rtm:    client.NewRTM(),
+		socket: socketmode.New(client),
 		l:      cfg.logger(),
 	}
 
@@ -67,20 +72,33 @@ func New(token string, cfg *Config) (service.Service, error) {
 func (s *slackService) Start(ctx context.Context) (<-chan *service.Event, error) {
 	s.l.Info("Start Slack bot service")
 
-	_, err := s.client.AuthTestContext(ctx)
+	auth, err := s.client.AuthTestContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to authenticate slack service: %w", err)
 	}
 
-	s.ch = make(chan *service.Event)
+	s.botID = auth.BotID
+	s.userID = auth.UserID
+	s.teamID = auth.TeamID
+	s.l.Info("authenticated", slog.String("bot_id", s.botID), slog.String("user_id", s.userID), slog.String("team_id", s.teamID))
 
-	go s.rtm.ManageConnection()
+	s.ch = make(chan *service.Event)
 
 	ctx, cancel := context.WithCancel(ctx)
 	s.exit = cancel
 
 	s.wg.Add(1)
 	go s.loop(ctx)
+
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+
+		err := s.socket.RunContext(ctx)
+		if err != nil && !errors.Is(err, context.Canceled) {
+			s.l.Error("failed to run socketmode", slog.Any("err", err))
+		}
+	}()
 
 	return s.ch, nil
 }
@@ -89,20 +107,40 @@ func (s *slackService) loop(ctx context.Context) {
 	defer s.wg.Done()
 
 loop:
-	for msg := range s.rtm.IncomingEvents {
-		switch ev := msg.Data.(type) {
-		case *slack.HelloEvent:
-			s.l.Info("Slack connection is ready")
-			s.handleHello()
-		case *slack.ConnectedEvent:
-			s.l.Info("Slack connection is connected")
-		case *slack.DisconnectedEvent:
-			s.l.Info("Slack connection is disconnected")
-			if ev.Intentional {
-				break loop
+	for {
+		select {
+		case <-ctx.Done():
+			break loop
+		case event := <-s.socket.Events:
+			switch event.Type {
+			case socketmode.EventTypeHello:
+				s.l.Info("bot is ready")
+				s.handleHello()
+			case socketmode.EventTypeConnected:
+				s.l.Info("bot has connected")
+			case socketmode.EventTypeDisconnect:
+				s.l.Info("bot has disconnected")
+			case socketmode.EventTypeIncomingError:
+				s.l.Info("bot received invomming error")
+			case socketmode.EventTypeEventsAPI:
+				eventsAPIEvent, ok := event.Data.(slackevents.EventsAPIEvent)
+				if !ok {
+					continue
+				}
+
+				s.socket.Ack(*event.Request)
+
+				innerEvent := eventsAPIEvent.InnerEvent
+
+				switch slackevents.EventsAPIType(innerEvent.Type) {
+				case slackevents.Message:
+					ev, ok := innerEvent.Data.(*slackevents.MessageEvent)
+					if !ok {
+						continue
+					}
+					s.handleMessage(ev)
+				}
 			}
-		case *slack.MessageEvent:
-			s.handleMessage(ev)
 		}
 	}
 }
@@ -116,7 +154,7 @@ func (s *slackService) handleHello() {
 }
 
 // handleMessage handles the message event.
-func (s *slackService) handleMessage(msg *slack.MessageEvent) {
+func (s *slackService) handleMessage(msg *slackevents.MessageEvent) {
 	if msg.User == s.UserID() {
 		// bot message
 		return
@@ -130,12 +168,14 @@ func (s *slackService) handleMessage(msg *slack.MessageEvent) {
 
 // Start implements the service.Service interface.
 func (s *slackService) Close() error {
-	return s.rtm.Disconnect()
+	s.exit()
+	s.wg.Wait()
+	return nil
 }
 
 // UserID implements the service.Service interface.
 func (s *slackService) UserID() string {
-	return s.rtm.GetInfo().User.ID
+	return s.userID
 }
 
 // Post implements the service.Service interface.
@@ -145,8 +185,7 @@ func (s *slackService) Post(channelID, text string) {
 
 // Post implements the service.Service interface.
 func (s *slackService) PostToThread(channelID, text string, ts string) {
-	s.rtm.SendMessage(
-		s.rtm.NewOutgoingMessage(text, channelID, slack.RTMsgOptionTS(ts)))
+	s.client.PostMessage(channelID, slack.MsgOptionText(text, false), slack.MsgOptionTS(ts))
 }
 
 // Mention implements the service.Service interface.

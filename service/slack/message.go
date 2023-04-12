@@ -5,13 +5,13 @@ import (
 
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
-	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 	"golang.org/x/exp/slog"
 )
 
 type message struct {
 	service  *slackService
-	msg      *slack.MessageEvent
+	msg      *slackevents.MessageEvent
 	blocks   []*msgfmt.Block
 	mentions []string
 	text     string
@@ -20,7 +20,7 @@ type message struct {
 var _ plugin.Message = (*message)(nil)
 
 // newMessage returns a new *message as plugin.Message.
-func newMessage(service *slackService, msg *slack.MessageEvent) plugin.Message {
+func newMessage(service *slackService, msg *slackevents.MessageEvent) plugin.Message {
 	m := &message{
 		service: service,
 		msg:     msg,
@@ -73,12 +73,12 @@ func (m *message) Text() string {
 
 // Post implements the plugin.Message interface.
 func (m *message) Post(text string) {
-	m.service.PostToThread(m.ChannelID(), text, m.msg.ThreadTimestamp)
+	m.service.PostToThread(m.ChannelID(), text, m.msg.ThreadTimeStamp)
 }
 
 // Mention implements the plugin.Message interface.
 func (m *message) Mention(text string) {
-	m.service.MentionToThread(m.ChannelID(), m.UserID(), text, m.msg.ThreadTimestamp)
+	m.service.MentionToThread(m.ChannelID(), m.UserID(), text, m.msg.ThreadTimeStamp)
 }
 
 // Mentions implements the plugin.Message interface.

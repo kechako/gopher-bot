@@ -15,12 +15,14 @@ import (
 
 func main() {
 	var token string
+	var appToken string
 	flag.StringVar(&token, "token", "", "Slack bot token.")
+	flag.StringVar(&appToken, "app-token", "", "Slack bot application token.")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout))
 
-	service, err := slack.New(token, &slack.Config{
+	service, err := slack.New(token, appToken, &slack.Config{
 		Logger: logger,
 	})
 	if err != nil {

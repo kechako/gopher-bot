@@ -220,7 +220,7 @@ func (s *slackService) ProcessCommand(channelID string, command string) {
 
 // Channel returns a channel of specified channelID.
 func (s *slackService) Channel(channelID string) plugin.Channel {
-	if len(channelID) == 0 || channelID[0] != 'C' {
+	if len(channelID) == 0 {
 		// ignore group
 		return nil
 	}

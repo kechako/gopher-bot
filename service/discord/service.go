@@ -85,7 +85,7 @@ func (s *discordService) UserID() string {
 func (s *discordService) Post(channelID, text string) {
 	_, err := s.session.ChannelMessageSend(channelID, text)
 	if err != nil {
-		s.l.Error("Failed to post message to %s", channelID)
+		s.l.Error("Failed to post message", slog.String("channel_id", channelID), slog.Any("err", err))
 	}
 }
 
@@ -93,13 +93,13 @@ func (s *discordService) Post(channelID, text string) {
 func (s *discordService) Mention(channelID, userID, text string) {
 	user, err := s.session.User(userID)
 	if err != nil {
-		s.l.Error("Failed to get user info : %s", userID)
+		s.l.Error("Failed to get user info", slog.String("user_id", userID), slog.Any("err", err))
 	}
 
 	text = user.Mention() + text
 	_, err = s.session.ChannelMessageSend(channelID, text)
 	if err != nil {
-		s.l.Error("Failed to post mention message to %s", channelID)
+		s.l.Error("Failed to post mention message", slog.String("channel_id", channelID), slog.Any("err", err))
 	}
 }
 
@@ -117,7 +117,7 @@ func (s *discordService) ProcessCommand(channelID string, command string) {
 func (s *discordService) Channel(channelID string) plugin.Channel {
 	ch, err := s.session.Channel(channelID)
 	if err != nil {
-		s.l.Error("Failed to get channel info : %s", channelID)
+		s.l.Error("Failed to get channel info", slog.String("channel_id", channelID), slog.Any("err", err))
 		return nil
 	}
 
@@ -131,7 +131,7 @@ func (s *discordService) Channel(channelID string) plugin.Channel {
 func (s *discordService) User(userID string) plugin.User {
 	u, err := s.session.User(userID)
 	if err != nil {
-		s.l.Error("Failed to get user info : %s", userID)
+		s.l.Error("Failed to get user info", slog.String("user_id", userID), slog.Any("err", err))
 		return nil
 	}
 

@@ -229,7 +229,7 @@ func (s *slackService) Channel(channelID string) plugin.Channel {
 		ChannelID: channelID,
 	})
 	if err != nil {
-		s.l.Error("Failed to get channel info : %s", channelID)
+		s.l.Error("Failed to get channel info", slog.String("channel_id", channelID), slog.Any("err", err))
 		return nil
 	}
 
@@ -248,7 +248,7 @@ func (s *slackService) User(userID string) plugin.User {
 
 	u, err := s.client.GetUserInfo(userID)
 	if err != nil {
-		s.l.Error("Failed to get user info : %s", userID)
+		s.l.Error("Failed to get user info", slog.String("user_id", userID), slog.Any("err", err))
 		return nil
 	}
 

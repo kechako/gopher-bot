@@ -3,7 +3,6 @@ module github.com/kechako/gopher-bot/v2
 require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/google/go-cmp v0.5.9
-	github.com/kechako/sigctx v0.1.0
 	github.com/mattn/go-runewidth v0.0.14
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/robfig/cron/v3 v3.0.1

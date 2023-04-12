@@ -5,11 +5,11 @@ import (
 	"flag"
 	"log"
 	"os"
+	"os/signal"
 
 	bot "github.com/kechako/gopher-bot/v2"
 	"github.com/kechako/gopher-bot/v2/examples/plugins/echo"
 	"github.com/kechako/gopher-bot/v2/service/discord"
-	"github.com/kechako/sigctx"
 	"golang.org/x/exp/slog"
 )
 
@@ -35,7 +35,7 @@ func main() {
 
 	b.AddPlugin(echo.New())
 
-	ctx, cancel := sigctx.WithCancelBySignal(context.Background(), os.Interrupt)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
 	if err := b.Run(ctx); err != nil {

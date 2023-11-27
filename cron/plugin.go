@@ -47,7 +47,7 @@ func (p *cronPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 
 	retMsg, err := p.cron.Execute(ctx, params[1:], msg.ChannelID())
 	if err != nil {
-		if err == cron.CommandSyntaxError {
+		if err == cron.ErrInvalidSyntax {
 			msg.PostHelp(p.Help(ctx))
 			return
 		}

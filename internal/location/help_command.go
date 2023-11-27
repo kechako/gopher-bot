@@ -19,5 +19,5 @@ func (cmd *helpCommand) Description() string {
 }
 
 func (cmd *helpCommand) Execute(ctx context.Context, params []string) (string, error) {
-	return "", CommandSyntaxError
+	return "", ErrInvalidSyntax
 }

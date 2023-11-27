@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -51,7 +50,7 @@ func New(s service.Service, opts ...Option) (*Bot, error) {
 
 func (b *Bot) init() error {
 	if b.databaseDir == "" {
-		dir, err := ioutil.TempDir(os.TempDir(), "gopher-bot")
+		dir, err := os.MkdirTemp(os.TempDir(), "gopher-bot")
 		if err != nil {
 			return fmt.Errorf("failed to create database dir: %w", err)
 		}

@@ -17,7 +17,7 @@ type scheduler interface {
 }
 
 var (
-	CommandSyntaxError = errors.New("CommandSyntaxError")
+	ErrInvalidSyntax = errors.New("invalid syntax")
 )
 
 type Bot interface {
@@ -111,7 +111,7 @@ func (c *Cron) Execute(ctx context.Context, params []string, channel string) (st
 
 	commander, ok := c.commanderMap[cmdName]
 	if !ok {
-		return "", CommandSyntaxError
+		return "", ErrInvalidSyntax
 	}
 
 	return commander.Execute(ctx, params, channel)

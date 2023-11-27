@@ -1,13 +1,12 @@
 package database
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
 func makeTestDir(name string) (string, func(), error) {
-	dir, err := ioutil.TempDir(os.TempDir(), "gopher-bot-database-test")
+	dir, err := os.MkdirTemp(os.TempDir(), "gopher-bot-database-test")
 	if err != nil {
 		return "", nil, err
 	}

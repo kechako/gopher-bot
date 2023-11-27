@@ -38,7 +38,7 @@ func (p *locationPlugin) DoAction(ctx context.Context, msg plugin.Message) {
 
 	retMsg, err := p.cmd.Execute(ctx, params[1:])
 	if err != nil {
-		if err == location.CommandSyntaxError {
+		if err == location.ErrInvalidSyntax {
 			msg.PostHelp(p.Help(ctx))
 			return
 		}

@@ -77,11 +77,11 @@ var helps = []struct {
 			Name:        "test02",
 			Description: "single line",
 			Commands: []*Command{
-				&Command{
+				{
 					Command:     "command01",
 					Description: "single line 01",
 				},
-				&Command{
+				{
 					Command:     "command0002",
 					Description: "single line 02",
 				},
@@ -109,11 +109,11 @@ third line`,
 second line
 third line`,
 			Commands: []*Command{
-				&Command{
+				{
 					Command:     "command01",
 					Description: "single line",
 				},
-				&Command{
+				{
 					Command: "command0002",
 					Description: `first line
 second line
@@ -147,11 +147,11 @@ third line`,
 second line
 third line`,
 			Commands: []*Command{
-				&Command{
+				{
 					Command:     "コマンド01",
 					Description: "single line",
 				},
-				&Command{
+				{
 					Command: "command0002",
 					Description: `first line
 second line

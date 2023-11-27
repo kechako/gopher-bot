@@ -25,7 +25,7 @@ func (cmd *listCommand) Description() string {
 
 func (cmd *listCommand) Execute(ctx context.Context, params []string) (string, error) {
 	if len(params) != 1 {
-		return "", CommandSyntaxError
+		return "", ErrInvalidSyntax
 	}
 
 	db, ok := database.FromContext(ctx)

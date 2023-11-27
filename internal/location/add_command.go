@@ -48,19 +48,19 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string) (string, er
 
 func makeLocation(params []string) (*database.Location, error) {
 	if len(params) != 3 {
-		return nil, CommandSyntaxError
+		return nil, ErrInvalidSyntax
 	}
 
 	name := params[0]
 
 	lat, err := strconv.ParseFloat(params[1], 32)
 	if err != nil {
-		return nil, CommandSyntaxError
+		return nil, ErrInvalidSyntax
 	}
 
 	lon, err := strconv.ParseFloat(params[2], 32)
 	if err != nil {
-		return nil, CommandSyntaxError
+		return nil, ErrInvalidSyntax
 	}
 
 	return &database.Location{

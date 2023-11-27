@@ -25,7 +25,7 @@ func (cmd *removeCommand) Description() string {
 func (cmd *removeCommand) Execute(ctx context.Context, params []string) (string, error) {
 	params = params[1:]
 	if len(params) != 1 {
-		return "", CommandSyntaxError
+		return "", ErrInvalidSyntax
 	}
 
 	db, ok := database.FromContext(ctx)

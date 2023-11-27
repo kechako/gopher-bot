@@ -39,7 +39,7 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string, channel str
 	}
 
 	if err := cmd.scheduler.addSchedule(ctx, sch); err != nil {
-		return "", CommandSyntaxError
+		return "", ErrInvalidSyntax
 	}
 
 	if err := db.SaveSchedule(ctx, sch); err != nil {
@@ -55,7 +55,7 @@ func (cmd *addCommand) Execute(ctx context.Context, params []string, channel str
 
 func makeSchedule(params []string, channel string) (*database.Schedule, error) {
 	if len(params) < 7 {
-		return nil, CommandSyntaxError
+		return nil, ErrInvalidSyntax
 	}
 
 	name := params[0]

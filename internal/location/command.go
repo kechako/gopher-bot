@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	CommandSyntaxError = errors.New("CommandSyntaxError")
+	ErrInvalidSyntax = errors.New("invalid syntax")
 )
 
 type Commander interface {
@@ -55,7 +55,7 @@ func (cmd *Command) Execute(ctx context.Context, params []string) (string, error
 
 	commander, ok := cmd.commanderMap[cmdName]
 	if !ok {
-		return "", CommandSyntaxError
+		return "", ErrInvalidSyntax
 	}
 
 	return commander.Execute(ctx, params)

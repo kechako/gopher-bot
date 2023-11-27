@@ -3,11 +3,11 @@ package cron
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
 	"github.com/kechako/gopher-bot/v2/internal/cron"
 	"github.com/kechako/gopher-bot/v2/plugin"
-	"golang.org/x/exp/slog"
 )
 
 const commandName = "cron"

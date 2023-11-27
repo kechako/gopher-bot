@@ -1,12 +1,12 @@
 package slack
 
 import (
+	"log/slog"
 	"strings"
 
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service/slack/internal/msgfmt"
 	"github.com/slack-go/slack/slackevents"
-	"golang.org/x/exp/slog"
 )
 
 type message struct {

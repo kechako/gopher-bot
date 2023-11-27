@@ -6,9 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
-
 	"sync"
 
 	"github.com/kechako/gopher-bot/v2/plugin"
@@ -17,7 +17,6 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
-	"golang.org/x/exp/slog"
 )
 
 type Config struct {
@@ -32,7 +31,7 @@ func (cfg *Config) logger() *slog.Logger {
 	if l != nil {
 		return l
 	}
-	return slog.New(slog.NewTextHandler(os.Stdout))
+	return slog.New(slog.NewTextHandler(os.Stdout, nil))
 }
 
 // slackService represents a service for Slack.

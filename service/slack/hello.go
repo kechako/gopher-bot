@@ -1,8 +1,9 @@
 package slack
 
 import (
+	"log/slog"
+
 	"github.com/kechako/gopher-bot/v2/plugin"
-	"golang.org/x/exp/slog"
 )
 
 type hello struct {

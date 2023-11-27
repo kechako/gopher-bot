@@ -3,11 +3,11 @@ package location
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
 	"github.com/kechako/gopher-bot/v2/internal/location"
 	"github.com/kechako/gopher-bot/v2/plugin"
-	"golang.org/x/exp/slog"
 )
 
 const commandName = "loc"

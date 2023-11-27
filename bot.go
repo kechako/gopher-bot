@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +16,6 @@ import (
 	"github.com/kechako/gopher-bot/v2/internal/database"
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service"
-	"golang.org/x/exp/slog"
 )
 
 // Bot represents a bot.
@@ -75,7 +75,7 @@ func (b *Bot) init() error {
 	b.db = db
 
 	if b.l == nil {
-		b.l = slog.New(slog.NewTextHandler(os.Stdout))
+		b.l = slog.New(slog.NewTextHandler(os.Stdout, nil))
 	}
 
 	return nil

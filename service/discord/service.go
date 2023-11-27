@@ -6,13 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
 	"github.com/kechako/gopher-bot/v2/plugin"
 	"github.com/kechako/gopher-bot/v2/service"
-	"golang.org/x/exp/slog"
 )
 
 type Config struct {
@@ -27,7 +27,7 @@ func (cfg *Config) logger() *slog.Logger {
 	if l != nil {
 		return l
 	}
-	return slog.New(slog.NewTextHandler(os.Stdout))
+	return slog.New(slog.NewTextHandler(os.Stdout, nil))
 }
 
 // discordService represents a service for Discord.

@@ -3,8 +3,7 @@ package plugin
 
 import (
 	"context"
-
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // Plugin is the interface implemented by bot plugins.

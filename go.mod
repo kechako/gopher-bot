@@ -7,7 +7,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/slack-go/slack v0.12.1
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 )
 
 require (
@@ -19,4 +18,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
 
-go 1.19
+go 1.21.0
